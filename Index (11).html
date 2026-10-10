@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Naguara · Inventario y ventas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{z
+  --bg:#f6f3f1; --surface:#fff; --surface2:#faf8f7; --ink:#1e181b; --ink2:#4f454a; --muted:#857a80;
+  --line:#ebe5e2; --line2:#ddd5d1;
+  --brand:#6b2346; --brand-600:#561a37; --brand-50:#f8eff3; --brand-100:#f0dde6;
+  --acc:#c45f3a; --acc-soft:#f3a17f; --side-bg:#2a1520;
+  --ok:#1f7a4d; --ok-50:#e5f4ec; --warn:#94560a; --warn-50:#fdf1d8; --bad:#b42318; --bad-50:#fdecea;
+  --r:12px; --r-lg:16px;
+  --sh:0 1px 2px rgba(30,15,22,.05),0 2px 8px rgba(30,15,22,.04);
+  --sh-lg:0 16px 48px rgba(30,15,22,.22);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);font-size:14.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+[hidden]{display:none!important}
+.ic{flex:none;display:block}
+.muted{color:var(--muted)} .sm{font-size:12.5px}
+.num,.kpi .v,.stat .v,.tbl td.r{font-variant-numeric:tabular-nums}
+.grow{flex:1}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+
+/* ---------- Botones ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;border:1px solid transparent;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;text-decoration:none;transition:background .15s,border-color .15s,color .15s,transform .05s}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--brand-600)}
+.btn-soft{background:var(--surface);border-color:var(--line2);color:var(--ink)}
+.btn-soft:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+.btn-ghost{background:transparent;color:var(--ink2)}
+.btn-ghost:hover{background:var(--brand-50)}
+.btn-danger{background:var(--bad-50);color:var(--bad)}
+.btn-danger:hover{background:#f9d7d3}
+.btn-ok{background:var(--ok);color:#fff}
+.btn-lg{height:52px;font-size:16px;border-radius:12px}
+.btn-sm{height:32px;padding:0 11px;font-size:13px;border-radius:8px;gap:6px}
+.btn-block{width:100%}
+.icon-btn{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:10px;border:0;background:transparent;color:var(--ink2);cursor:pointer;flex:none}
+.icon-btn:hover{background:var(--brand-50);color:var(--brand)}
+.icon-btn.sm{width:30px;height:30px;border-radius:8px}
+.link{background:none;border:0;padding:0;color:var(--brand);font-weight:600;cursor:pointer;font-size:13px;text-decoration:none}
+.link:hover{text-decoration:underline}
+
+/* ---------- Formularios ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field>label,.lbl{font-size:13px;font-weight:600;color:var(--ink2)}
+.input{width:100%;height:42px;padding:0 12px;border:1px solid var(--line2);border-radius:10px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+.input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-100)}
+select.input{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23857a80' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:34px;cursor:pointer}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{font-size:12.5px;color:var(--muted)}
+.search{position:relative;flex:1;min-width:200px}
+.search .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search .input{padding-left:38px}
+.sel{width:auto;min-width:170px}
+
+/* ---------- Login ---------- */
+.login{min-height:100vh;display:grid;grid-template-columns:1.05fr 1fr;background:var(--surface)}
+.login-brand{position:relative;overflow:hidden;background:linear-gradient(155deg,#7f2d55 0%,#4b1631 55%,#2a0b1b 100%);color:#fff;padding:52px 56px;display:flex;flex-direction:column;justify-content:space-between;gap:40px}
+.login-brand::before,.login-brand::after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.12)}
+.login-brand::before{width:520px;height:520px;right:-220px;bottom:-200px}
+.login-brand::after{width:340px;height:340px;right:-120px;bottom:-110px;background:rgba(255,255,255,.04)}
+.logo-xl{font-family:'Fraunces',Georgia,serif;font-size:40px;font-weight:700;letter-spacing:.3px}
+.login-brand h2{font-family:'Fraunces',Georgia,serif;font-size:36px;line-height:1.15;font-weight:600;max-width:460px}
+.login-brand ul{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:12px;color:rgba(255,255,255,.86);position:relative;z-index:1}
+.login-brand li{display:flex;gap:10px;align-items:center}
+.login-brand li .ic{color:var(--acc-soft)}
+.login-brand .foot{font-size:12.5px;color:rgba(255,255,255,.55);position:relative;z-index:1}
+.login-main{display:grid;place-items:center;padding:40px 20px}
+.login-form{width:100%;max-width:360px}
+.login-form h1{font-size:26px;font-weight:700;letter-spacing:-.3px}
+.login-form>p{color:var(--muted);margin:6px 0 26px}
+.pass{position:relative}
+.pass .input{padding-right:44px}
+.pass .icon-btn{position:absolute;right:3px;top:2px}
+.err{color:var(--bad);font-size:13.5px;min-height:20px;margin-top:12px;text-align:center}
+
+/* ---------- Estructura ---------- */
+.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;background:var(--side-bg);color:#e9dfe4;display:flex;flex-direction:column;padding:22px 14px 16px}
+.side-logo{font-family:'Fraunces',Georgia,serif;font-size:28px;font-weight:700;color:#fff;padding:0 12px 24px;line-height:1.1}
+.side-logo small{display:block;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:#b9a6b0;margin-top:4px}
+.side-nav{display:flex;flex-direction:column;gap:3px}
+.nav-i{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border-radius:10px;border:0;background:none;color:#cbbcc4;font-weight:600;font-size:14.5px;cursor:pointer;text-align:left}
+.nav-i:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-i.on{background:rgba(255,255,255,.12);color:#fff}
+.nav-i.on .ic{color:var(--acc-soft)}
+.side-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:14px}
+.who{display:flex;align-items:center;gap:10px;padding:0 8px 10px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--acc-soft);color:var(--side-bg);display:grid;place-items:center;font-weight:700;flex:none}
+.who b{color:#fff;display:block;font-size:14px}
+.who small{color:#b9a6b0;font-size:12px}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:16px 32px;background:rgba(246,243,241,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.topbar h1{font-size:21px;font-weight:700;letter-spacing:-.2px}
+.mlogo{display:none}
+.sync{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2);padding:6px 11px;border-radius:20px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
+.sync.busy .dot{background:#e0a100;animation:pulse 1s infinite}
+.sync.err .dot{background:var(--bad)}
+@keyframes pulse{50%{opacity:.25}}
+.page{padding:4px 32px 48px;width:100%;max-width:1260px}
+.pg{display:flex;flex-direction:column;gap:18px}
+.demo-note{margin:0 32px 12px;background:#fff6e5;border:1px solid #f5dfb3;color:#7a4b05;border-radius:10px;padding:9px 14px;font-size:13px;max-width:1196px}
+.m-only{display:none}
+.show-m{display:none}
+
+/* ---------- Tarjetas ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px;box-shadow:var(--sh)}
+.card.flush{padding:0;overflow:hidden}
+.card h3{font-size:15px;font-weight:700}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.card-h.pad{padding:16px 18px 0;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.hello{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hello h2{font-size:24px;font-weight:700;letter-spacing:-.3px}
+.hello p{color:var(--muted);margin-top:2px}
+.qa{display:flex;gap:10px;flex-wrap:wrap}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpis.k6{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--sh);min-width:0}
+.kpi .l{font-size:13px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px}
+.kpi .l .ic{color:var(--brand)}
+.kpi .v{font-size:25px;font-weight:700;letter-spacing:-.5px;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .s{font-size:12.5px;color:var(--muted);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.kpi.hl{background:var(--brand);border-color:var(--brand);color:#fff}
+.kpi.hl .l,.kpi.hl .s{color:rgba(255,255,255,.8)}
+.kpi.hl .l .ic{color:var(--acc-soft)}
+.delta{font-weight:700;font-size:12px;padding:1px 7px;border-radius:20px;white-space:nowrap}
+.delta.up{background:var(--ok-50);color:var(--ok)}
+.delta.down{background:var(--bad-50);color:var(--bad)}
+.kpi.hl .delta{background:rgba(255,255,255,.18);color:#fff}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;line-height:1.3}
+.b-ok{background:var(--ok-50);color:var(--ok)}
+.b-warn{background:var(--warn-50);color:var(--warn)}
+.b-bad{background:var(--bad-50);color:var(--bad)}
+.b-soft{background:var(--brand-50);color:var(--brand)}
+.b-gray{background:#f0ecea;color:var(--ink2)}
+
+.li{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .grow{min-width:0}
+.li .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .d{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .v{font-weight:700;white-space:nowrap;text-align:right}
+.li.click{cursor:pointer;margin:0 -10px;padding:11px 10px;border-radius:10px;border-bottom-color:transparent}
+.li.click:hover{background:var(--surface2)}
+.rank{width:28px;height:28px;border-radius:8px;background:var(--brand-50);color:var(--brand);display:grid;place-items:center;font-weight:700;font-size:12.5px;flex:none}
+.empty{text-align:center;color:var(--muted);padding:30px 14px;font-size:14px}
+.empty .ic{margin:0 auto 10px;color:#cfc5c1}
+.empty b{display:block;color:var(--ink2);margin-bottom:2px}
+
+.onboard{background:linear-gradient(135deg,#fff 0%,#fbf3f6 100%);border:1px solid var(--brand-100)}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step .n{width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.step b{display:block}
+.step span{font-size:13px;color:var(--muted)}
+
+/* ---------- Tablas ---------- */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:11px 16px;background:var(--surface2);border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl .r{text-align:right;white-space:nowrap}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:var(--surface2)}
+.tbl tr.grp td{background:#fbf6f8;font-weight:700;color:var(--brand);font-size:13px;padding:9px 16px}
+.tbl tr.grp td span{font-weight:500;color:var(--muted);margin-left:8px}
+.tbl .pname{font-weight:600}
+.tbl .code{display:block;font-size:11.5px;color:var(--muted);font-weight:500}
+.tbl .strike{text-decoration:line-through;color:var(--muted)}
+.acts{display:flex;gap:6px;justify-content:flex-end}
+
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 15px;min-width:150px;box-shadow:var(--sh)}
+.stat .l{font-size:12px;color:var(--muted);font-weight:600}
+.stat .v{font-size:18px;font-weight:700;margin-top:2px}
+button.stat{cursor:pointer;text-align:left;font:inherit}
+button.stat:hover{border-color:var(--warn)}
+button.stat.on{border-color:var(--warn);background:var(--warn-50)}
+
+.seg{display:inline-flex;background:#ece6e3;border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.seg button.on{background:#fff;color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.seg.full{display:flex}
+.seg.full button{flex:1;padding:8px 4px;font-size:13px}
+.periodo{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.periodo .dt{width:150px}
+
+/* ---------- Gráficos ---------- */
+.vchart{position:relative;height:calc(var(--h) + 30px);padding-left:62px}
+.vc-grid{position:absolute;left:0;right:0;top:0;height:var(--h);pointer-events:none}
+.gl{position:absolute;left:62px;right:0;border-top:1px solid var(--line)}
+.gl span{position:absolute;right:calc(100% + 10px);top:-8px;font-size:11px;color:var(--muted);white-space:nowrap}
+.vc-bars{position:relative;display:flex;align-items:flex-end;height:var(--h);gap:4px}
+.vc-col{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;position:relative;min-width:0}
+.vc-bar{background:var(--brand);border-radius:4px 4px 0 0;transition:opacity .15s}
+.vc-bar.zero{height:2px!important;background:var(--line2);border-radius:2px}
+.vc-bars:hover .vc-bar{opacity:.45}
+.vc-bars .vc-col:hover .vc-bar{opacity:1}
+.vc-x{position:absolute;top:calc(100% + 7px);left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.vc-tip{position:absolute;z-index:5;background:var(--ink);color:#fff;border-radius:9px;padding:8px 11px;font-size:12.5px;pointer-events:none;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:var(--sh-lg)}
+.vc-tip b{display:block;font-size:14px}
+.hb{margin-bottom:14px}
+.hb:last-child{margin-bottom:0}
+.hb-t{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;margin-bottom:6px}
+.hb-t span{font-weight:600}
+.hb-bar{height:8px;background:#f1ecea;border-radius:6px;overflow:hidden}
+.hb-bar i{display:block;height:100%;background:var(--brand);border-radius:6px}
+.hb-s{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ---------- Vender (caja) ---------- */
+.pos{display:grid;grid-template-columns:minmax(0,1fr) 384px;gap:18px;align-items:start}
+.pos-left{display:flex;flex-direction:column;gap:14px;min-width:0}
+.search-big{position:relative}
+.search-big .ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-big .input{height:52px;font-size:15.5px;padding-left:46px;border-radius:12px;box-shadow:var(--sh)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line2);background:#fff;border-radius:20px;padding:7px 14px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap;color:var(--ink2)}
+.chip:hover{border-color:var(--ink2)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip small{opacity:.65;margin-left:5px;font-weight:500;font-size:12px}
+.pos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:12px}
+.tile{position:relative;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:border-color .15s,box-shadow .15s,transform .05s;box-shadow:var(--sh);font:inherit;color:inherit}
+.tile:hover:not(:disabled){border-color:var(--brand);box-shadow:0 4px 16px rgba(107,35,70,.13)}
+.tile:active:not(:disabled){transform:scale(.985)}
+.tile:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.tile-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:5px}
+.tile-cat{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.tile-name{font-weight:700;line-height:1.25}
+.tile-det{font-size:13px;color:var(--ink2)}
+.tile-foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px}
+.tile-foot b{font-size:16px}
+.tile .add{width:32px;height:32px;border-radius:9px;background:var(--brand-50);color:var(--brand);display:grid;place-items:center;transition:background .15s,color .15s}
+.tile:hover:not(:disabled) .add{background:var(--brand);color:#fff}
+.incart{position:absolute;top:-8px;right:-8px;min-width:26px;height:26px;border-radius:13px;background:var(--acc);color:#fff;font-weight:700;font-size:12.5px;display:grid;place-items:center;padding:0 7px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.pos-cart{position:sticky;top:78px;padding:0;display:flex;flex-direction:column;max-height:calc(100vh - 98px)}
+.pos-cart>.card-h{padding:16px 18px;margin:0;border-bottom:1px solid var(--line)}
+.cart-items{overflow-y:auto;padding:0 18px;flex:1 1 auto;min-height:90px}
+.ci{display:flex;gap:6px;padding:13px 0;border-bottom:1px solid var(--line)}
+.ci:last-child{border-bottom:0}
+.ci-main{flex:1;min-width:0}
+.ci-name{font-weight:700;font-size:14px}
+.ci-det{font-size:12.5px;color:var(--muted)}
+.ci-row{display:flex;align-items:center;gap:8px;margin-top:9px}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line2);border-radius:9px;overflow:hidden;background:#fff}
+.stepper button{width:30px;height:32px;border:0;background:var(--surface2);cursor:pointer;font-size:17px;font-weight:700;color:var(--ink2);line-height:1}
+.stepper button:hover{background:var(--brand-50);color:var(--brand)}
+.stepper input{width:38px;height:32px;border:0;text-align:center;font-weight:700;outline:0}
+.ci-price{display:inline-flex;align-items:center;gap:3px;font-size:12.5px;color:var(--muted);border:1px solid var(--line2);border-radius:9px;padding:0 8px;height:34px;background:#fff}
+.ci-price:focus-within{border-color:var(--brand)}
+.ci-price input{width:58px;border:0;outline:0;font-weight:600;color:var(--ink);background:transparent}
+.ci-tot{margin-left:auto;white-space:nowrap;font-weight:700}
+.cart-form{padding:14px 18px 18px;border-top:1px solid var(--line);background:var(--surface2);border-radius:0 0 var(--r-lg) var(--r-lg)}
+.cart-form .field{margin-bottom:12px}
+.cart-form .input{height:40px}
+.sum>div{display:flex;justify-content:space-between;padding:2px 0;font-size:14px;color:var(--ink2)}
+.sum .tot{font-size:21px;font-weight:700;color:var(--ink);padding-top:9px;margin-top:6px;border-top:1px dashed var(--line2)}
+.sum .vuelto{color:var(--ok);font-weight:700;font-size:15px}
+.sum .vuelto.falta{color:var(--bad)}
+.sum{margin-bottom:14px}
+.cart-bar{display:none}
+
+/* ---------- Inventario ---------- */
+.inv-cards{display:none}
+.icard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--sh)}
+.icard-h{display:flex;justify-content:space-between;gap:10px}
+.icard .nm{font-weight:700;line-height:1.25}
+.icard .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.stk-big{font-size:26px;font-weight:700;text-align:right;line-height:1}
+.stk-big small{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:3px}
+.icard .pr{display:flex;gap:16px;font-size:13px;color:var(--muted)}
+.icard .pr b{color:var(--ink)}
+.icard .acts{justify-content:stretch}
+.icard .acts .btn{flex:1}
+.grp-h{font-weight:700;color:var(--brand);font-size:13.5px;padding:8px 2px 0;display:flex;justify-content:space-between;gap:8px}
+.grp-h span{font-weight:500;color:var(--muted)}
+
+/* ---------- Modal ---------- */
+#modal{position:fixed;inset:0;background:rgba(25,12,18,.5);display:grid;place-items:center;padding:20px;z-index:90;animation:fade .15s}
+.mbox{background:#fff;border-radius:18px;width:100%;max-width:480px;max-height:92vh;overflow:auto;box-shadow:var(--sh-lg);animation:pop .18s ease-out}
+.mbox.wide{max-width:620px}
+.m-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:20px 22px 0}
+.m-h h3{font-size:19px;font-weight:700;letter-spacing:-.2px}
+.m-h p{color:var(--muted);font-size:13.5px;margin-top:3px}
+.m-b{padding:18px 22px 6px}
+.m-f{display:flex;gap:10px;justify-content:flex-end;padding:14px 22px 20px;border-top:1px solid var(--line);flex-wrap:wrap;position:sticky;bottom:0;background:#fff}
+.m-f .left{margin-right:auto}
+@keyframes pop{from{transform:translateY(10px);opacity:0}}
+@keyframes fade{from{opacity:0}}
+.tallas{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px;margin-top:10px}
+.talla-in{border:1px solid var(--line2);border-radius:10px;padding:7px 9px;display:flex;flex-direction:column;gap:1px;background:#fff;cursor:text;transition:border-color .15s,background .15s}
+.talla-in.has{border-color:var(--brand);background:var(--brand-50)}
+.talla-in .tl{font-size:11.5px;font-weight:700;color:var(--ink2);text-transform:uppercase}
+.talla-in input{border:0;outline:0;background:transparent;font-size:17px;font-weight:700;width:100%;padding:0}
+.talla-in input.tname{font-size:12px;font-weight:700;text-transform:uppercase}
+.talla-in input::placeholder{color:#c9bfbb}
+.resumen{background:var(--surface2);border:1px dashed var(--line2);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--ink2);margin-bottom:12px}
+.resumen b{color:var(--ink)}
+.inline{display:flex;align-items:center;gap:10px}
+.inline .input{width:90px}
+.ok-head{display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px 22px 0;text-align:center}
+.ok-head .circ{width:52px;height:52px;border-radius:50%;background:var(--ok-50);color:var(--ok);display:grid;place-items:center}
+.ok-head h3{font-size:19px}
+
+/* ---------- Comprobante ---------- */
+.ticket{max-width:340px;margin:0 auto;background:#fff;border:1px dashed var(--line2);border-radius:12px;padding:20px}
+.tk-logo{font-family:'Fraunces',Georgia,serif;font-size:26px;font-weight:700;text-align:center;color:var(--brand)}
+.tk-sub{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px}
+.tk-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:12.5px;padding-bottom:12px;border-bottom:1px dashed var(--line2)}
+.tk-meta span{display:block;color:var(--muted);font-size:11px}
+.tk-items{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+.tk-items td{padding:5px 0;vertical-align:top}
+.tk-items td.r{text-align:right;white-space:nowrap;padding-left:8px}
+.tk-items small{color:var(--muted);display:block}
+.tk-sum{border-top:1px dashed var(--line2);padding-top:8px;font-size:13px}
+.tk-sum div{display:flex;justify-content:space-between;padding:2px 0}
+.tk-sum .big{font-size:18px;font-weight:700;padding-top:6px}
+.tk-anul{margin-top:12px;text-align:center;font-weight:700;color:var(--bad);border:2px solid var(--bad);border-radius:8px;padding:5px;letter-spacing:1px}
+.tk-thanks{text-align:center;font-size:12.5px;color:var(--muted);margin-top:14px}
+
+/* ---------- Avisos ---------- */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);display:flex;align-items:center;gap:9px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:.22s;z-index:100;max-width:calc(100vw - 32px);box-shadow:var(--sh-lg)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:var(--bad)}
+#toast .ic{color:#8fe0b5}
+#toast.err .ic{color:#fff}
+#boot{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:95}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--brand-100);border-top-color:var(--brand);animation:rot .8s linear infinite;margin:0 auto 12px}
+@keyframes rot{to{transform:rotate(360deg)}}
+#printArea,.print-head{display:none}
+
+/* ---------- Pantallas medianas ---------- */
+@media (max-width:1100px){ .pos{grid-template-columns:minmax(0,1fr) 340px} .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+/* ---------- Celular ---------- */
+@media (max-width:900px){
+  .login{grid-template-columns:1fr}
+  .login-brand{padding:30px 22px 34px;gap:16px}
+  .login-brand h2{font-size:24px}
+  .login-brand ul,.login-brand .foot{display:none}
+  .login-main{padding:28px 20px 40px;place-items:start center}
+  .shell{grid-template-columns:1fr}
+  .side{display:none}
+  .topbar{padding:10px 12px 10px 16px;background:var(--brand);color:#fff;gap:6px;padding-top:calc(10px + env(safe-area-inset-top))}
+  .topbar h1{display:none}
+  .mlogo{display:block;font-family:'Fraunces',Georgia,serif;font-size:24px;font-weight:700;color:#fff}
+  .topbar .icon-btn{color:#fff}
+  .topbar .icon-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+  .sync{background:rgba(255,255,255,.14);border-color:transparent;color:#fff;padding:7px 9px}
+  #syncTxt{display:none}
+  .m-only{display:inline-grid}
+  .d-only{display:none!important}
+  .show-m{display:block}
+  .hide-m{display:none}
+  .page{padding:14px 14px 120px}
+  .demo-note{margin:12px 14px 0}
+  .pg{gap:14px}
+  .hello{align-items:stretch}
+  .hello h2{font-size:21px}
+  .qa{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .qa .btn{min-width:0;white-space:normal;line-height:1.2;height:auto;min-height:46px;padding:8px 10px;font-size:13.5px}
+  .qa .btn:first-child{grid-column:1/-1;min-height:50px;font-size:15px}
+  .kpis,.kpis.k6{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{padding:13px 14px}
+  .kpi .v{font-size:20px}
+  .kpi .l{font-size:12px}
+  .grid2{grid-template-columns:1fr;gap:14px}
+  .steps{grid-template-columns:1fr}
+  .card{padding:15px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{min-width:0}
+  .toolbar .sel,.toolbar .periodo{flex:1 1 100%}
+  .toolbar .periodo .sel{flex:1}
+  .toolbar .btn{flex:1}
+  .search{min-width:0;flex:1 1 100%}
+  .seg.tabs{display:flex;width:100%}
+  .seg.tabs button{flex:1}
+  .tbl th,.tbl td{padding:11px 12px}
+  .inv-table{display:none}
+  .inv-cards{display:flex;flex-direction:column;gap:10px}
+  .pos{grid-template-columns:1fr}
+  .pos-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .tile{padding:12px}
+  .pos-cart{display:none;position:fixed;inset:0;z-index:70;border-radius:0;max-height:none;border:0}
+  body.cart-open .pos-cart{display:flex}
+  body.cart-open{overflow:hidden}
+  .cart-form{border-radius:0;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  .cart-bar{display:flex;position:fixed;left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:45;background:var(--ink);color:#fff;border-radius:14px;padding:13px 16px;align-items:center;gap:10px;box-shadow:var(--sh-lg);cursor:pointer;border:0;font:inherit;text-align:left}
+  .cart-bar b{font-size:16px}
+  .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;font-size:11px;font-weight:600;color:var(--muted);padding:5px 0;cursor:pointer;border-radius:10px}
+  .bnav button.on{color:var(--brand)}
+  .bnav button.on .ic{transform:scale(1.06)}
+  #modal{place-items:end center;padding:0}
+  .mbox{border-radius:20px 20px 0 0;max-height:94vh}
+  .m-f{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+  .m-f .btn{flex:1}
+  .m-f .left{flex:0 0 100%;order:3}
+  #toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  .vchart{padding-left:50px}
+  .gl{left:50px}
+}
+@media (min-width:901px){ .bnav{display:none} }
+
+/* ---------- Impresión ---------- */
+@media print{
+  body{background:#fff}
+  body.print-ticket>*:not(#printArea){display:none!important}
+  body.print-ticket #printArea{display:block}
+  body.print-ticket .ticket{border:0;max-width:300px;padding:0}
+  body.print-report .side,body.print-report .topbar,body.print-report .bnav,body.print-report .toolbar,body.print-report .demo-note,body.print-report #toast,body.print-report .cart-bar,body.print-report #modal,body.print-report .pg:not(#p-reportes){display:none!important}
+  body.print-report .shell{display:block}
+  body.print-report .page{padding:0;max-width:none}
+  body.print-report .print-head{display:block;font-family:'Fraunces',Georgia,serif;font-size:22px;margin-bottom:6px}
+  body.print-report .print-head small{display:block;font-family:'DM Sans',sans-serif;font-size:12px;color:#666}
+  .card,.kpi,.stat{box-shadow:none;break-inside:avoid}
+  .kpis.k6{grid-template-columns:repeat(3,1fr)}
+  .grid2{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="boot" hidden><div><div class="spin"></div><div class="muted">Cargando tu inventario…</div></div></div>
+
+<!-- ======================= LOGIN ======================= -->
+<section id="login" class="login">
+  <div class="login-brand">
+    <div class="logo-xl">Naguara</div>
+    <div>
+      <h2>Tu tienda de ropa, ordenada y al día.</h2>
+      <ul>
+        <li><i data-ic="check"></i>Registra ventas en segundos, con comprobante</li>
+        <li><i data-ic="check"></i>Controla tu stock por prenda, talla y color</li>
+        <li><i data-ic="check"></i>Mira cuánto vendes y cuánto ganas cada mes</li>
+        <li><i data-ic="check"></i>Todo queda guardado en tu Google Sheets</li>
+      </ul>
+    </div>
+    <div class="foot">Sistema de inventario y ventas · Naguara</div>
+  </div>
+  <div class="login-main">
+    <form class="login-form" id="loginForm" autocomplete="on">
+      <h1>Iniciar sesión</h1>
+      <p>Ingresa con tu usuario y contraseña.</p>
+      <div class="field"><label for="lu">Usuario</label><input class="input" id="lu" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+      <div class="field"><label for="lp">Contraseña</label>
+        <div class="pass"><input class="input" id="lp" type="password" autocomplete="current-password" required>
+          <button type="button" class="icon-btn" id="verPass" aria-label="Mostrar contraseña"><i data-ic="eye"></i></button></div></div>
+      <button class="btn btn-primary btn-lg btn-block" id="lbtn" type="submit">Ingresar</button>
+      <div class="err" id="lerr" role="alert"></div>
+    </form>
+  </div>
+</section>
+
+<!-- ======================= APP ======================= -->
+<div id="app" class="shell" hidden>
+  <aside class="side">
+    <div class="side-logo">Naguara<small>Inventario y ventas</small></div>
+    <nav class="side-nav" id="sideNav"></nav>
+    <div class="side-foot">
+      <div class="who"><span class="avatar">C</span><div><b>Camila</b><small>Administradora</small></div></div>
+      <button class="nav-i" onclick="ayuda()"><i data-ic="help"></i><span>¿Cómo se usa?</span></button>
+      <button class="nav-i" onclick="salir()"><i data-ic="logout"></i><span>Cerrar sesión</span></button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="mlogo">Naguara</div>
+      <h1 id="pageTitle">Inicio</h1>
+      <div class="grow"></div>
+      <span class="sync" id="sync" title="Estado de guardado"><i class="dot"></i><span id="syncTxt">Guardado en Google</span></span>
+      <button class="icon-btn" title="Actualizar datos" aria-label="Actualizar datos" onclick="recargar()"><i data-ic="refresh"></i></button>
+      <button class="icon-btn m-only" title="Ayuda" aria-label="Ayuda" onclick="ayuda()"><i data-ic="help"></i></button>
+      <button class="icon-btn m-only" title="Cerrar sesión" aria-label="Cerrar sesión" onclick="salir()"><i data-ic="logout"></i></button>
+    </header>
+    <div class="demo-note" id="demoNote" hidden><b>Vista de prueba:</b> aquí los datos solo quedan en este navegador. Cuando la publiques en Google, todo se guarda en tu hoja de cálculo.</div>
+
+    <main class="page">
+
+      <!-- ============ INICIO ============ -->
+      <section id="p-inicio" class="pg">
+        <div class="hello">
+          <div><h2 id="saludo">Hola, Camila</h2><p id="fechaHoy"></p></div>
+          <div class="qa">
+            <button class="btn btn-primary" onclick="irA('vender')"><i data-ic="cart"></i>Nueva venta</button>
+            <button class="btn btn-soft" onclick="abrirNuevo()"><i data-ic="plus"></i>Agregar productos</button>
+            <button class="btn btn-soft" onclick="abrirIngreso()"><i data-ic="in"></i>Ingreso de mercadería</button>
+          </div>
+        </div>
+        <div id="onboard"></div>
+        <div class="kpis" id="kpiInicio"></div>
+        <div class="card">
+          <div class="card-h"><h3>Ventas de los últimos 14 días</h3><span class="muted sm" id="chart14Tot"></span></div>
+          <div id="chart14"></div>
+        </div>
+        <div class="grid2">
+          <div class="card"><div class="card-h"><h3>Lo más vendido del mes</h3><button class="link" onclick="irA('reportes')">Ver reportes</button></div><div id="topMes"></div></div>
+          <div class="card"><div class="card-h"><h3>Por reponer</h3><button class="link" onclick="verPorReponer()">Ver todo</button></div><div id="reponer"></div></div>
+        </div>
+        <div class="card"><div class="card-h"><h3>Últimas ventas</h3><button class="link" onclick="irA('movimientos')">Ver historial</button></div><div id="ultVentas"></div></div>
+      </section>
+
+      <!-- ============ VENDER ============ -->
+      <section id="p-vender" class="pg" hidden>
+        <div class="pos">
+          <div class="pos-left">
+            <div class="search-big"><i data-ic="search" data-s="20"></i><input class="input" id="posQ" placeholder="Buscar prenda, talla, color o código…" autocomplete="off"></div>
+            <div class="chips" id="posCats"></div>
+            <div class="pos-grid" id="posGrid"></div>
+          </div>
+          <aside class="card pos-cart" id="posCart" aria-label="Venta actual">
+            <div class="card-h">
+              <h3>Venta actual</h3>
+              <div class="inline"><button class="link" id="cartClear">Vaciar</button>
+                <button class="icon-btn sm m-only" onclick="toggleCart(false)" aria-label="Cerrar"><i data-ic="x"></i></button></div>
+            </div>
+            <div class="cart-items" id="cartItems"></div>
+            <div class="cart-form">
+              <div class="field"><label for="cCliente">Cliente <span class="muted">(opcional)</span></label>
+                <input class="input" id="cCliente" list="dlClientes" placeholder="Nombre del cliente" autocomplete="off"><datalist id="dlClientes"></datalist></div>
+              <div class="field"><span class="lbl">Método de pago</span><div class="seg full" id="cPago"></div></div>
+              <div class="row2">
+                <div class="field"><label for="cDesc">Descuento (S/)</label><input class="input" id="cDesc" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0.00"></div>
+                <div class="field" id="pagaConF"><label for="cPaga">Paga con (S/)</label><input class="input" id="cPaga" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0.00"></div>
+              </div>
+              <div class="sum">
+                <div><span>Subtotal</span><span id="cSub" class="num">S/ 0.00</span></div>
+                <div id="cDescRow" hidden><span>Descuento</span><span id="cDescV" class="num"></span></div>
+                <div class="tot"><span>Total</span><span id="cTot" class="num">S/ 0.00</span></div>
+                <div id="cVueltoRow" class="vuelto" hidden><span id="cVueltoL">Vuelto</span><span id="cVuelto" class="num"></span></div>
+              </div>
+              <button class="btn btn-primary btn-lg btn-block" id="cCobrar" disabled><i data-ic="check"></i><span id="cCobrarTxt">Cobrar</span></button>
+            </div>
+          </aside>
+        </div>
+        <button class="cart-bar" id="cartBar" hidden onclick="toggleCart(true)">
+          <i data-ic="cart" data-s="20"></i><span class="grow" id="cartBarTxt"></span><b id="cartBarTot"></b><i data-ic="chev"></i>
+        </button>
+      </section>
+
+      <!-- ============ INVENTARIO ============ -->
+      <section id="p-inventario" class="pg" hidden>
+        <div class="stats" id="invStats"></div>
+        <div class="toolbar">
+          <div class="search"><i data-ic="search"></i><input class="input" id="invQ" placeholder="Buscar por prenda, talla, color o código…" autocomplete="off"></div>
+          <select class="input sel" id="invCat"></select>
+          <select class="input sel" id="invStock">
+            <option value="">Todo el stock</option><option value="hay">Con stock</option><option value="bajo">Por reponer</option><option value="agotado">Agotados</option>
+          </select>
+          <button class="btn btn-soft" onclick="abrirIngreso()"><i data-ic="in"></i>Ingreso</button>
+          <button class="btn btn-primary" onclick="abrirNuevo()"><i data-ic="plus"></i>Agregar productos</button>
+        </div>
+        <div class="card flush inv-table"><div class="tbl-wrap" id="invTbl"></div></div>
+        <div class="inv-cards" id="invCards"></div>
+      </section>
+
+      <!-- ============ MOVIMIENTOS ============ -->
+      <section id="p-movimientos" class="pg" hidden>
+        <div class="toolbar">
+          <div class="seg tabs" id="movTab"><button data-v="ventas" class="on">Ventas</button><button data-v="entradas">Entradas y ajustes</button></div>
+          <div class="grow"></div>
+          <div class="periodo" id="movPer"></div>
+        </div>
+        <div class="toolbar"><div class="search"><i data-ic="search"></i><input class="input" id="movQ" placeholder="Buscar por N° de venta, cliente o prenda…" autocomplete="off"></div></div>
+        <div class="stats" id="movStats"></div>
+        <div class="card flush"><div class="tbl-wrap" id="movBody"></div></div>
+      </section>
+
+      <!-- ============ REPORTES ============ -->
+      <section id="p-reportes" class="pg" hidden>
+        <div class="toolbar">
+          <div class="periodo" id="repPer"></div>
+          <div class="grow"></div>
+          <a class="btn btn-soft" id="btnHoja" target="_blank" rel="noopener" hidden><i data-ic="sheet"></i>Abrir en Google Sheets</a>
+          <button class="btn btn-soft" onclick="imprimirReporte()"><i data-ic="printer"></i>Imprimir / PDF</button>
+        </div>
+        <div class="print-head">Naguara · Reporte de ventas<small id="repRango"></small></div>
+        <div class="kpis k6" id="repKpis"></div>
+        <div class="card"><div class="card-h"><h3 id="repChartT">Ventas por día</h3><span class="muted sm" id="repChartS"></span></div><div id="repChart"></div></div>
+        <div class="grid2">
+          <div class="card"><div class="card-h"><h3>Ventas por categoría</h3></div><div id="repCat"></div></div>
+          <div class="card"><div class="card-h"><h3>Métodos de pago</h3></div><div id="repPago"></div></div>
+        </div>
+        <div class="grid2">
+          <div class="card flush"><div class="card-h pad"><h3>Prendas más vendidas</h3></div><div class="tbl-wrap" id="repTop"></div></div>
+          <div class="card"><div class="card-h"><h3>Ventas por talla</h3></div><div id="repTalla"></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bnav" id="bNav"></nav>
+</div>
+
+<div id="modal" hidden></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="printArea"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN
+   ===================================================================== */
+const NEGOCIO = 'Naguara';
+const PRENDAS = [
+  { n: 'Pantalón Lino Nacional', c: 'Pantalones' },
+  { n: 'Pantalón de Vestir', c: 'Pantalones' },
+  { n: 'Pantalón French Terry (Fristerry)', c: 'Pantalones' },
+  { n: 'Leggins Suplex Acampanado', c: 'Leggins' },
+  { n: 'Vestido Campesina Largo', c: 'Vestidos' },
+  { n: 'Vestido Campesina Corto', c: 'Vestidos' },
+  { n: 'Short Suplex', c: 'Shorts' },
+  { n: 'Polo', c: 'Polos' }
+];
+const CATEGORIAS = ['Pantalones', 'Leggins', 'Vestidos', 'Shorts', 'Polos', 'Otros'];
+const TALLAS_SETS = { letras: ['XS', 'S', 'M', 'L', 'XL', 'XXL'], numeros: ['26', '28', '30', '32', '34', '36', '38'], unica: ['ÚNICA'] };
+const ORDEN_TALLAS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'STANDARD', 'ÚNICA', 'UNICA'];
+const COLORES = ['Negro', 'Blanco', 'Beige', 'Crema', 'Gris', 'Azul', 'Azul marino', 'Celeste', 'Rojo', 'Vino', 'Rosado', 'Fucsia', 'Lila', 'Verde', 'Verde olivo', 'Marrón', 'Camel', 'Mostaza', 'Estampado'];
+const PAGOS = ['Efectivo', 'Yape', 'Plin', 'Tarjeta', 'Transferencia'];
+
+const ICONS = {
+  home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-6h4v6"/>',
+  cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.7h11.2L21 7.2H6.1"/>',
+  box: '<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>',
+  list: '<path d="M9 6h12M9 12h12M9 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="2.6"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7.5 16v-3M12 16V8M16.5 16v-6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  in: '<path d="M12 3v11M7.5 9.5 12 14l4.5-4.5"/><path d="M4 16v4h16v-4"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  logout: '<path d="M14 4h5v16h-5"/><path d="M9.5 8 5.5 12l4 4M5.5 12H15"/>',
+  refresh: '<path d="M20 11.5A8 8 0 1 0 17.7 17"/><path d="M20 4.5v7h-7"/>',
+  printer: '<path d="M7 9V3.5h10V9"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/>',
+  send: '<path d="M21 3 10 14"/><path d="M21 3 14.5 21l-4.5-7-7-4.5z"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  alert: '<path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.5h.01"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  sheet: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/>',
+  tag: '<path d="M3 12V3h9l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.4"/>',
+  wallet: '<path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 7V6a2 2 0 0 1 2-2h11"/><path d="M16.5 13.5h.01" stroke-width="2.6"/>',
+  trend: '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>',
+  chev: '<path d="m9 6 6 6-6 6"/>',
+  receipt: '<path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21z"/><path d="M9 8h6M9 12h6"/>',
+  layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>'
+};
+function ic(n, s) { s = s || 18; return '<svg class="ic" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[n] || '') + '</svg>'; }
+function pintarIconos(root) { (root || document).querySelectorAll('i[data-ic]').forEach(el => { el.outerHTML = ic(el.dataset.ic, +el.dataset.s || 18); }); }
+
+/* =====================================================================
+   ESTADO Y CONEXIÓN
+   ===================================================================== */
+let S = { productos: [], movimientos: [], urlHoja: '' };
+let PM = {};
+let TOKEN = null, cargadoEn = 0, pagina = 'inicio';
+let cart = [], pago = 'Efectivo', posCat = 'Todas', movTab = 'ventas';
+const DEMO = !(window.google && google.script && google.script.run);
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+function api(fn, ...args) {
+  if (DEMO) return new Promise((res, rej) => setTimeout(() => { try { res(Demo[fn](...args)); } catch (e) { rej(e); } }, 150));
+  return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
+}
+
+async function run(fn, ...args) {
+  estado('busy');
+  try {
+    const d = await api(fn, TOKEN, ...args);
+    const datos = d && d.datos ? d.datos : (d && d.productos ? d : null);
+    if (datos) { S = datos; cargadoEn = Date.now(); renderTodo(); }
+    estado('ok');
+    return d;
+  } catch (e) {
+    const msg = (e && e.message) ? e.message : String(e);
+    if (msg.indexOf('SESION') >= 0) { estado('ok'); salir('Tu sesión expiró. Vuelve a ingresar.'); }
+    else { estado('err'); toast(msg.replace(/^(Exception|Error):\s*/, ''), true); }
+    throw e;
+  }
+}
+
+function estado(s) {
+  const el = document.getElementById('sync');
+  el.classList.toggle('busy', s === 'busy'); el.classList.toggle('err', s === 'err');
+  document.getElementById('syncTxt').textContent =
+    s === 'busy' ? 'Guardando…' : s === 'err' ? 'Error al guardar' : (DEMO ? 'Modo prueba' : 'Guardado en Google');
+}
+
+/* =====================================================================
+   SESIÓN
+   ===================================================================== */
+document.getElementById('verPass').onclick = () => {
+  const i = document.getElementById('lp'); i.type = i.type === 'password' ? 'text' : 'password';
+};
+document.getElementById('loginForm').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const btn = document.getElementById('lbtn'), err = document.getElementById('lerr');
+  btn.disabled = true; btn.textContent = 'Ingresando…'; err.textContent = '';
+  try {
+    const r = await api('login', document.getElementById('lu').value, document.getElementById('lp').value);
+    if (!r || !r.ok) { err.textContent = 'Usuario o contraseña incorrectos.'; return; }
+    TOKEN = r.token; store.set('naguara_tk', TOKEN);
+    await entrar();
+  } catch (e) { err.textContent = 'No se pudo conectar. Revisa tu internet e inténtalo otra vez.'; }
+  finally { btn.disabled = false; btn.textContent = 'Ingresar'; }
+});
+
+async function entrar() {
+  S = await api('obtenerDatos', TOKEN);
+  cargadoEn = Date.now();
+  document.getElementById('login').hidden = true;
+  document.getElementById('boot').hidden = true;
+  document.getElementById('app').hidden = false;
+  document.getElementById('demoNote').hidden = !DEMO;
+  estado('ok');
+  renderTodo();
+  irA(pagina);
+}
+
+function salir(msg) {
+  TOKEN = null; store.del('naguara_tk');
+  document.getElementById('app').hidden = true;
+  document.getElementById('boot').hidden = true;
+  document.getElementById('login').hidden = false;
+  document.getElementById('lp').value = '';
+  document.getElementById('lerr').textContent = msg || '';
+  toggleCart(false); cerrarModal();
+}
+
+async function recargar(silencioso) {
+  try { await run('obtenerDatos'); if (!silencioso) toast('Datos actualizados'); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && TOKEN && Date.now() - cargadoEn > 60000) recargar(true);
+});
+
+/* =====================================================================
+   NAVEGACIÓN
+   ===================================================================== */
+const NAV = [['inicio', 'Inicio', 'home'], ['vender', 'Vender', 'cart'], ['inventario', 'Inventario', 'box'], ['movimientos', 'Movimientos', 'list'], ['reportes', 'Reportes', 'chart']];
+function construirNav() {
+  document.getElementById('sideNav').innerHTML = NAV.map(n => `<button class="nav-i" data-p="${n[0]}">${ic(n[2], 20)}<span>${n[1]}</span></button>`).join('');
+  document.getElementById('bNav').innerHTML = NAV.map(n => `<button data-p="${n[0]}">${ic(n[2], 22)}<span>${n[1]}</span></button>`).join('');
+  document.querySelectorAll('[data-p]').forEach(b => b.addEventListener('click', () => irA(b.dataset.p)));
+}
+function irA(p) {
+  pagina = p;
+  document.querySelectorAll('[data-p]').forEach(b => b.classList.toggle('on', b.dataset.p === p));
+  NAV.forEach(n => { document.getElementById('p-' + n[0]).hidden = n[0] !== p; });
+  document.getElementById('pageTitle').textContent = NAV.find(n => n[0] === p)[1];
+  toggleCart(false);
+  actualizarCartBar();
+  window.scrollTo(0, 0);
+  if (p === 'vender' && window.innerWidth > 900) setTimeout(() => document.getElementById('posQ').focus(), 60);
+}
+
+/* =====================================================================
+   UTILIDADES
+   ===================================================================== */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const sol = n => 'S/\u00a0' + Number(n || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const sol0 = n => 'S/\u00a0' + Number(n || 0).toLocaleString('es-PE', { maximumFractionDigits: 0 });
+const ent = n => Number(n || 0).toLocaleString('es-PE');
+const r2 = n => Math.round(n * 100) / 100;
+const sum = (a, f) => a.reduce((s, x) => s + f(x), 0);
+const pad2 = n => String(n).padStart(2, '0');
+const diaKey = d => { const x = new Date(d); return x.getFullYear() + '-' + pad2(x.getMonth() + 1) + '-' + pad2(x.getDate()); };
+const hoyKey = () => diaKey(new Date());
+const keyDate = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
+const sumarDias = (k, n) => { const d = keyDate(k); d.setDate(d.getDate() + n); return diaKey(d); };
+const diasEntre = (a, b) => Math.round((keyDate(b) - keyDate(a)) / 864e5);
+const fmtKey = k => keyDate(k).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
+const fFechaHora = d => new Date(d).toLocaleString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const fCorta = d => { const k = diaKey(d), h = hoyKey(); const hora = new Date(d).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }); if (k === h) return 'Hoy, ' + hora; if (k === sumarDias(h, -1)) return 'Ayer, ' + hora; return new Date(d).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' }) + ', ' + hora; };
+const det = p => [p.talla ? 'Talla ' + p.talla : '', p.color].filter(Boolean).join(' · ');
+const esBajo = p => p.stock <= (p.minimo || 0);
+const norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const coincide = (texto, q) => { const t = norm(texto); return norm(q).split(/\s+/).filter(Boolean).every(w => t.includes(w)); };
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+function ordenTalla(t) { const u = String(t || '').toUpperCase(); const i = ORDEN_TALLAS.indexOf(u); if (i >= 0) return i; const n = parseFloat(u); return isNaN(n) ? 300 : 100 + n; }
+function ordenProd(a, b) { return a.prenda.localeCompare(b.prenda, 'es') || a.color.localeCompare(b.color, 'es') || ordenTalla(a.talla) - ordenTalla(b.talla); }
+function categoria(prenda) {
+  const p = String(prenda || '').toLowerCase();
+  const f = PRENDAS.find(x => x.n.toLowerCase() === p); if (f) return f.c;
+  if (/pantal|jogger|jean/.test(p)) return 'Pantalones';
+  if (/legg|legin/.test(p)) return 'Leggins';
+  if (/vestid/.test(p)) return 'Vestidos';
+  if (/short/.test(p)) return 'Shorts';
+  if (/polo/.test(p)) return 'Polos';
+  return 'Otros';
+}
+function stockBadge(p) {
+  if (p.stock === 0) return '<span class="badge b-bad">Agotado</span>';
+  if (esBajo(p)) return `<span class="badge b-warn">${ic('alert', 12)}Quedan ${p.stock}</span>`;
+  return `<span class="badge b-ok">${p.stock} en stock</span>`;
+}
+function vacio(icono, titulo, texto) { return `<div class="empty">${ic(icono, 34)}<b>${titulo}</b>${texto || ''}</div>`; }
+function deltaHTML(act, ant) {
+  if (!ant) return '';
+  const d = Math.round((act - ant) / ant * 100);
+  return `<span class="delta ${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d)}%</span>`;
+}
+
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.innerHTML = ic(err ? 'alert' : 'check', 18) + '<span>' + esc(msg) + '</span>';
+  t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(t._t); t._t = setTimeout(() => { t.className = ''; }, err ? 4500 : 2800);
+}
+
+/* ---- Ventas agrupadas por N° de venta ---- */
+function agruparTickets(lineas) {
+  const map = new Map();
+  lineas.forEach(m => {
+    const k = m.ticket || m.id;
+    let t = map.get(k);
+    if (!t) {
+      t = { key: k, num: m.ticket || 'Venta', fecha: m.fecha, cliente: m.cliente, pago: m.pago, nota: m.nota, items: [], subtotal: 0, descuento: 0, total: 0, costo: 0, unidades: 0, anulada: m.tipo === 'Venta anulada' };
+      map.set(k, t);
+    }
+    t.items.unshift(m);
+    t.subtotal += m.cantidad * m.precio; t.descuento += m.descuento || 0; t.total += m.total;
+    t.costo += m.costo * m.cantidad; t.unidades += m.cantidad;
+  });
+  return [...map.values()];
+}
+const lineasVenta = () => S.movimientos.filter(m => m.tipo === 'Venta');
+const ticketsValidos = () => agruparTickets(lineasVenta());
+
+/* ---- Periodos ---- */
+const PER = { mov: { p: 'mes', d: '', h: '' }, rep: { p: 'mes', d: '', h: '' } };
+const PER_OPC = [['hoy', 'Hoy'], ['ayer', 'Ayer'], ['7', 'Últimos 7 días'], ['30', 'Últimos 30 días'], ['mes', 'Este mes'], ['mesant', 'Mes pasado'], ['anio', 'Este año'], ['todo', 'Todo el historial'], ['rango', 'Elegir fechas…']];
+function rango(k) {
+  const s = PER[k], h = hoyKey();
+  switch (s.p) {
+    case 'hoy': return { d: h, h: h };
+    case 'ayer': { const a = sumarDias(h, -1); return { d: a, h: a }; }
+    case '7': return { d: sumarDias(h, -6), h: h };
+    case '30': return { d: sumarDias(h, -29), h: h };
+    case 'mes': return { d: h.slice(0, 8) + '01', h: h };
+    case 'mesant': { const x = keyDate(h); return { d: diaKey(new Date(x.getFullYear(), x.getMonth() - 1, 1)), h: diaKey(new Date(x.getFullYear(), x.getMonth(), 0)) }; }
+    case 'anio': return { d: h.slice(0, 4) + '-01-01', h: h };
+    case 'rango': return { d: s.d || '0000-01-01', h: s.h || '9999-12-31' };
+    default: return { d: '0000-01-01', h: '9999-12-31' };
+  }
+}
+const enRango = (f, r) => { const k = diaKey(f); return k >= r.d && k <= r.h; };
+function textoRango(k) {
+  const r = rango(k), o = PER_OPC.find(x => x[0] === PER[k].p);
+  if (PER[k].p === 'todo') return 'Todo el historial';
+  if (PER[k].p === 'rango') return fmtKey(r.d) + ' – ' + fmtKey(r.h);
+  return o[1] + ' · ' + (r.d === r.h ? fmtKey(r.d) : fmtKey(r.d) + ' – ' + fmtKey(r.h));
+}
+function periodoUI(k, onChange) {
+  const el = document.getElementById(k === 'mov' ? 'movPer' : 'repPer');
+  el.innerHTML = `<select class="input sel" aria-label="Periodo">${PER_OPC.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('')}</select>
+    <input type="date" class="input dt" aria-label="Desde" hidden><input type="date" class="input dt" aria-label="Hasta" hidden>`;
+  const [sel, d1, d2] = el.children;
+  sel.value = PER[k].p;
+  const upd = () => {
+    PER[k].p = sel.value;
+    const esR = sel.value === 'rango';
+    d1.hidden = d2.hidden = !esR;
+    if (esR && !d1.value) { d1.value = sumarDias(hoyKey(), -6); d2.value = hoyKey(); }
+    PER[k].d = d1.value; PER[k].h = d2.value;
+    onChange();
+  };
+  sel.onchange = upd; d1.onchange = upd; d2.onchange = upd;
+}
+
+/* ---- Gráficos ---- */
+function niceMax(v) {
+  if (v <= 0) return 0;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p;
+  return 10 * p;
+}
+function barChart(el, data, h) {
+  h = h || 210;
+  const max = niceMax(Math.max(0, ...data.map(d => d.value)));
+  const cada = Math.max(1, Math.ceil(data.length / (window.innerWidth < 700 ? 6 : 12)));
+  el.innerHTML = `<div class="vchart" style="--h:${h}px">
+    <div class="vc-grid">${[1, .5, 0].map(f => `<div class="gl" style="bottom:${f * 100}%"><span>${max ? sol0(max * f) : (f ? '' : 'S/ 0')}</span></div>`).join('')}</div>
+    <div class="vc-bars">${data.map((d, i) => `<div class="vc-col" data-i="${i}">
+      <div class="vc-bar${d.value ? '' : ' zero'}" style="height:${max ? d.value / max * 100 : 0}%"></div>
+      <div class="vc-x">${i % cada === 0 ? esc(d.label) : ''}</div></div>`).join('')}</div>
+    <div class="vc-tip" hidden></div></div>`;
+  const wrap = el.querySelector('.vchart'), tip = el.querySelector('.vc-tip');
+  const mostrar = col => {
+    const d = data[+col.dataset.i];
+    tip.innerHTML = `<b>${sol(d.value)}</b>${esc(d.tip)}`;
+    tip.hidden = false;
+    const wr = wrap.getBoundingClientRect(), cr = col.getBoundingClientRect(), bar = col.firstElementChild.getBoundingClientRect();
+    let x = cr.left - wr.left + cr.width / 2;
+    x = Math.max(70, Math.min(wr.width - 70, x));
+    tip.style.left = x + 'px';
+    tip.style.top = Math.max(0, bar.top - wr.top - 8) + 'px';
+  };
+  el.querySelectorAll('.vc-col').forEach(col => {
+    col.addEventListener('mouseenter', () => mostrar(col));
+    col.addEventListener('click', () => mostrar(col));
+  });
+  wrap.addEventListener('mouseleave', () => { tip.hidden = true; });
+}
+function hbars(el, filas, fmt) {
+  if (!filas.length) { el.innerHTML = vacio('chart', 'Sin datos en este periodo'); return; }
+  const max = Math.max(...filas.map(f => f.value)) || 1;
+  el.innerHTML = filas.map(f => `<div class="hb"><div class="hb-t"><span>${esc(f.label)}</span><b class="num">${fmt(f.value)}</b></div>
+    <div class="hb-bar"><i style="width:${Math.max(2, f.value / max * 100)}%"></i></div>${f.sub ? `<div class="hb-s">${f.sub}</div>` : ''}</div>`).join('');
+}
+
+/* =====================================================================
+   RENDER GENERAL
+   ===================================================================== */
+function renderTodo() {
+  PM = {}; S.productos.forEach(p => { PM[p.id] = p; });
+  cart = cart.filter(c => PM[c.id] && PM[c.id].stock > 0).map(c => (c.cant = Math.min(c.cant, PM[c.id].stock), c));
+  const clientes = [...new Set(S.movimientos.map(m => m.cliente).filter(Boolean))].sort();
+  document.getElementById('dlClientes').innerHTML = clientes.map(c => `<option value="${esc(c)}">`).join('');
+  renderInicio(); renderPOS(); renderCart(); renderInventario(); renderMovimientos(); renderReportes();
+}
+
+/* =====================================================================
+   INICIO
+   ===================================================================== */
+function renderInicio() {
+  const h = hoyKey(), hora = new Date().getHours();
+  document.getElementById('saludo').textContent = (hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches') + ', Camila';
+  const fh = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('fechaHoy').textContent = fh.charAt(0).toUpperCase() + fh.slice(1);
+
+  const P = S.productos, T = ticketsValidos();
+  document.getElementById('onboard').innerHTML = P.length ? '' : `<div class="card onboard">
+    <h3>Empieza en 3 pasos</h3>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><b>Agrega tus productos</b><span>Elige la prenda, el color y cuántas tienes por talla.</span><br><button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="abrirNuevo()">${ic('plus', 15)}Agregar productos</button></div></div>
+      <div class="step"><span class="n">2</span><div><b>Registra cada venta</b><span>En “Vender” tocas la prenda, cobras y el stock se descuenta solo.</span></div></div>
+      <div class="step"><span class="n">3</span><div><b>Revisa tus números</b><span>En “Reportes” ves cuánto vendes, cuánto ganas y qué se vende más.</span></div></div>
+    </div></div>`;
+
+  const tHoy = T.filter(t => diaKey(t.fecha) === h);
+  const ini = h.slice(0, 8) + '01';
+  const tMes = T.filter(t => { const k = diaKey(t.fecha); return k >= ini && k <= h; });
+  const x = keyDate(h);
+  const antIni = diaKey(new Date(x.getFullYear(), x.getMonth() - 1, 1));
+  const antFin = diaKey(new Date(x.getFullYear(), x.getMonth() - 1, Math.min(x.getDate(), new Date(x.getFullYear(), x.getMonth(), 0).getDate())));
+  const tAnt = T.filter(t => { const k = diaKey(t.fecha); return k >= antIni && k <= antFin; });
+  const vMes = sum(tMes, t => t.total), cMes = sum(tMes, t => t.costo), vAnt = sum(tAnt, t => t.total);
+  const unidades = sum(P, p => p.stock);
+
+  document.getElementById('kpiInicio').innerHTML = [
+    ['hl', 'wallet', 'Ventas de hoy', sol(sum(tHoy, t => t.total)), `${tHoy.length} ${tHoy.length === 1 ? 'venta' : 'ventas'} · ${ent(sum(tHoy, t => t.unidades))} prendas`],
+    ['', 'trend', 'Ventas del mes', sol(vMes), `${deltaHTML(vMes, vAnt)}${vAnt ? 'vs. mismo periodo del mes pasado' : ent(tMes.length) + ' ventas'}`],
+    ['', 'tag', 'Ganancia del mes', sol(vMes - cMes), `Margen ${pct(vMes - cMes, vMes)}% · venta menos costo`],
+    ['', 'box', 'Prendas en stock', ent(unidades), `Valen ${sol(sum(P, p => p.stock * p.precio))} a precio de venta`]
+  ].map(k => `<div class="kpi ${k[0]}"><div class="l">${ic(k[1], 16)}${k[2]}</div><div class="v">${k[3]}</div><div class="s">${k[4]}</div></div>`).join('');
+
+  // Gráfico 14 días
+  const dias = [];
+  for (let i = 13; i >= 0; i--) {
+    const k = sumarDias(h, -i), tt = T.filter(t => diaKey(t.fecha) === k), d = keyDate(k);
+    dias.push({ label: i === 0 ? 'Hoy' : d.getDate() + '/' + (d.getMonth() + 1), value: sum(tt, t => t.total),
+      tip: d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'short' }) + ' · ' + tt.length + (tt.length === 1 ? ' venta' : ' ventas') });
+  }
+  document.getElementById('chart14Tot').textContent = 'Total: ' + sol(sum(dias, d => d.value));
+  barChart(document.getElementById('chart14'), dias, 190);
+
+  // Más vendidos del mes
+  const ag = {};
+  tMes.forEach(t => t.items.forEach(m => {
+    const k = m.prenda + '|' + m.talla + '|' + m.color;
+    ag[k] = ag[k] || { prenda: m.prenda, talla: m.talla, color: m.color, u: 0, s: 0 };
+    ag[k].u += m.cantidad; ag[k].s += m.total;
+  }));
+  const top = Object.values(ag).sort((a, b) => b.u - a.u || b.s - a.s).slice(0, 5);
+  document.getElementById('topMes').innerHTML = top.length ? top.map((r, i) => `<div class="li"><span class="rank">${i + 1}</span>
+      <div class="grow"><div class="t">${esc(r.prenda)}</div><div class="d">${esc(det(r)) || '—'}</div></div>
+      <div class="v">${ent(r.u)} und.<div class="d">${sol(r.s)}</div></div></div>`).join('')
+    : vacio('chart', 'Aún no hay ventas este mes');
+
+  // Por reponer
+  const low = P.filter(esBajo).sort((a, b) => a.stock - b.stock || ordenProd(a, b));
+  document.getElementById('reponer').innerHTML = low.length ? low.slice(0, 5).map(p => `<div class="li">
+      <div class="grow"><div class="t">${esc(p.prenda)}</div><div class="d">${esc(det(p)) || '—'}</div></div>
+      ${stockBadge(p)}<button class="btn btn-soft btn-sm" onclick="abrirIngreso('${p.id}')">${ic('in', 15)}<span class="hide-m">Reponer</span></button></div>`).join('')
+      + (low.length > 5 ? `<div class="hint" style="padding-top:10px">y ${low.length - 5} más por reponer…</div>` : '')
+    : (P.length ? vacio('check', 'Todo bien abastecido', 'Ningún producto está por agotarse.') : vacio('box', 'Sin productos todavía'));
+
+  // Últimas ventas
+  const ult = agruparTickets(S.movimientos.filter(m => m.tipo === 'Venta' || m.tipo === 'Venta anulada')).slice(0, 6);
+  document.getElementById('ultVentas').innerHTML = ult.length ? ult.map(t => filaTicketLista(t)).join('') : vacio('receipt', 'Todavía no hay ventas', 'Registra tu primera venta en “Vender”.');
+}
+
+function filaTicketLista(t) {
+  const resumen = t.items.map(m => m.prenda).filter((v, i, a) => a.indexOf(v) === i);
+  const txt = resumen[0] + (resumen.length > 1 ? ` y ${resumen.length - 1} más` : '');
+  return `<div class="li click" onclick="verTicket('${esc(t.key)}')">
+    <span class="rank">${ic('receipt', 15)}</span>
+    <div class="grow"><div class="t">${esc(t.cliente || 'Cliente')} <span class="muted" style="font-weight:500">· ${esc(t.num)}</span></div>
+      <div class="d">${ent(t.unidades)} ${t.unidades === 1 ? 'prenda' : 'prendas'} · ${esc(txt)} · ${fCorta(t.fecha)}</div></div>
+    ${t.anulada ? '<span class="badge b-bad">Anulada</span>' : `<span class="badge b-gray hide-m">${esc(t.pago || '—')}</span>`}
+    <div class="v ${t.anulada ? 'muted' : ''}" style="${t.anulada ? 'text-decoration:line-through' : ''}">${sol(t.total)}</div></div>`;
+}
+
+function verPorReponer() {
+  document.getElementById('invStock').value = 'bajo';
+  irA('inventario'); renderInventario();
+}
+
+/* =====================================================================
+   VENDER (CAJA)
+   ===================================================================== */
+function renderPOS() {
+  const q = document.getElementById('posQ').value.trim().toLowerCase();
+  const P = S.productos;
+  const cuenta = { Todas: P.filter(p => p.stock > 0).length };
+  P.forEach(p => { if (p.stock > 0) { const c = categoria(p.prenda); cuenta[c] = (cuenta[c] || 0) + 1; } });
+  const cats = ['Todas', ...CATEGORIAS.filter(c => cuenta[c])];
+  if (!cats.includes(posCat)) posCat = 'Todas';
+  document.getElementById('posCats').innerHTML = cats.map(c => `<button class="chip ${c === posCat ? 'on' : ''}" data-c="${c}">${c}<small>${cuenta[c] || 0}</small></button>`).join('');
+
+  const lista = filtrarPOS(q);
+  const enCart = {}; cart.forEach(c => { enCart[c.id] = c.cant; });
+  document.getElementById('posGrid').innerHTML = lista.length ? lista.map(p => `
+    <button class="tile" data-id="${p.id}" ${p.stock === 0 ? 'disabled' : ''}>
+      <div class="tile-top"><span class="tile-cat">${esc(categoria(p.prenda))}</span>${p.stock === 0 ? '<span class="badge b-bad">Agotado</span>' : esBajo(p) ? `<span class="badge b-warn">Quedan ${p.stock}</span>` : `<span class="badge b-gray">${p.stock} disp.</span>`}</div>
+      <div class="tile-name">${esc(p.prenda)}</div>
+      <div class="tile-det">${esc(det(p)) || '&nbsp;'}</div>
+      <div class="tile-foot"><b class="num">${sol(p.precio)}</b><span class="add">${ic('plus', 18)}</span></div>
+      ${enCart[p.id] ? `<span class="incart">${enCart[p.id]}</span>` : ''}
+    </button>`).join('')
+    : `<div style="grid-column:1/-1">${P.length ? vacio('search', 'No se encontraron prendas', 'Prueba con otra palabra o categoría.') : vacio('box', 'Aún no tienes productos', '<br><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="abrirNuevo()">Agregar productos</button>')}</div>`;
+}
+function filtrarPOS(q) {
+  return S.productos.filter(p =>
+    (posCat === 'Todas' || categoria(p.prenda) === posCat) &&
+    (!q || coincide(p.prenda + ' ' + p.talla + ' ' + p.color + ' ' + p.codigo + ' ' + categoria(p.prenda), q)))
+    .sort((a, b) => (b.stock > 0) - (a.stock > 0) || ordenProd(a, b));
+}
+document.getElementById('posQ').addEventListener('input', renderPOS);
+document.getElementById('posQ').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const disp = filtrarPOS(e.target.value.trim().toLowerCase()).filter(p => p.stock > 0);
+  if (disp.length === 1) { agregarAlCarrito(disp[0].id); e.target.value = ''; renderPOS(); }
+});
+document.getElementById('posCats').addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (b) { posCat = b.dataset.c; renderPOS(); } });
+document.getElementById('posGrid').addEventListener('click', e => { const b = e.target.closest('.tile[data-id]'); if (b && !b.disabled) agregarAlCarrito(b.dataset.id); });
+
+function agregarAlCarrito(id) {
+  const p = PM[id]; if (!p) return;
+  const c = cart.find(x => x.id === id);
+  if (c) {
+    if (c.cant >= p.stock) { toast('Solo hay ' + p.stock + ' de ' + p.prenda + (p.talla ? ' talla ' + p.talla : ''), true); return; }
+    c.cant++;
+  } else {
+    if (p.stock < 1) return;
+    cart.push({ id, cant: 1, precio: p.precio });
+  }
+  renderCart(); renderPOS();
+}
+
+function renderCart() {
+  const box = document.getElementById('cartItems');
+  box.innerHTML = cart.length ? cart.map((c, i) => {
+    const p = PM[c.id];
+    return `<div class="ci" data-i="${i}">
+      <div class="ci-main"><div class="ci-name">${esc(p.prenda)}</div><div class="ci-det">${esc(det(p)) || '—'} · quedan ${p.stock}</div>
+        <div class="ci-row">
+          <div class="stepper"><button type="button" data-a="menos" aria-label="Quitar uno">−</button><input type="number" inputmode="numeric" min="1" max="${p.stock}" value="${c.cant}" data-f="cant" aria-label="Cantidad"><button type="button" data-a="mas" aria-label="Agregar uno">+</button></div>
+          <label class="ci-price" title="Precio unitario (puedes cambiarlo)">S/<input type="number" inputmode="decimal" min="0" step="0.5" value="${c.precio}" data-f="precio" aria-label="Precio unitario"></label>
+          <span class="ci-tot num">${sol(c.cant * c.precio)}</span>
+        </div></div>
+      <button type="button" class="icon-btn sm" data-a="quitar" aria-label="Quitar de la venta">${ic('x', 16)}</button></div>`;
+  }).join('') : vacio('cart', 'Venta vacía', 'Toca una prenda para agregarla.');
+  document.getElementById('cPago').innerHTML = PAGOS.map(p => `<button type="button" class="${p === pago ? 'on' : ''}" data-p2="${p}">${p}</button>`).join('');
+  totales();
+}
+
+function totales() {
+  const sub = r2(sum(cart, c => c.cant * c.precio));
+  const desc = Math.min(Math.max(0, Number(document.getElementById('cDesc').value) || 0), sub);
+  const tot = r2(sub - desc);
+  document.getElementById('cSub').textContent = sol(sub);
+  document.getElementById('cDescRow').hidden = !desc;
+  document.getElementById('cDescV').textContent = '− ' + sol(desc);
+  document.getElementById('cTot').textContent = sol(tot);
+  const efectivo = pago === 'Efectivo';
+  document.getElementById('pagaConF').style.visibility = efectivo ? 'visible' : 'hidden';
+  const paga = Number(document.getElementById('cPaga').value) || 0;
+  const vr = document.getElementById('cVueltoRow');
+  vr.hidden = !(efectivo && paga > 0 && cart.length);
+  vr.classList.toggle('falta', paga < tot);
+  document.getElementById('cVueltoL').textContent = paga < tot ? 'Falta' : 'Vuelto';
+  document.getElementById('cVuelto').textContent = sol(Math.abs(paga - tot));
+  const btn = document.getElementById('cCobrar');
+  btn.disabled = !cart.length;
+  document.getElementById('cCobrarTxt').textContent = cart.length ? 'Cobrar ' + sol(tot) : 'Cobrar';
+  actualizarCartBar(tot);
+  return { sub, desc, tot, paga };
+}
+
+function actualizarCartBar(tot) {
+  const bar = document.getElementById('cartBar');
+  if (tot == null) tot = r2(sum(cart, c => c.cant * c.precio) - Math.min(Number(document.getElementById('cDesc').value) || 0, sum(cart, c => c.cant * c.precio)));
+  const u = sum(cart, c => c.cant);
+  bar.hidden = !(pagina === 'vender' && cart.length);
+  document.getElementById('cartBarTxt').textContent = u + (u === 1 ? ' prenda' : ' prendas') + ' · Ver venta';
+  document.getElementById('cartBarTot').textContent = sol(tot);
+}
+
+function toggleCart(abrir) { document.body.classList.toggle('cart-open', !!abrir); }
+
+document.getElementById('cartItems').addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  const i = +b.closest('.ci').dataset.i, c = cart[i], p = PM[c.id];
+  if (b.dataset.a === 'mas') { if (c.cant < p.stock) c.cant++; else toast('Solo hay ' + p.stock + ' disponibles', true); }
+  if (b.dataset.a === 'menos') { c.cant--; if (c.cant < 1) cart.splice(i, 1); }
+  if (b.dataset.a === 'quitar') cart.splice(i, 1);
+  renderCart(); renderPOS();
+});
+document.getElementById('cartItems').addEventListener('input', e => {
+  const f = e.target.dataset.f; if (!f) return;
+  const ci = e.target.closest('.ci'), c = cart[+ci.dataset.i];
+  if (f === 'precio') c.precio = Math.max(0, Number(e.target.value) || 0);
+  if (f === 'cant') { const v = Math.round(Number(e.target.value) || 0); if (v >= 1) c.cant = Math.min(v, PM[c.id].stock); }
+  ci.querySelector('.ci-tot').textContent = sol(c.cant * c.precio);
+  totales();
+});
+document.getElementById('cartItems').addEventListener('change', () => { renderCart(); renderPOS(); });
+document.getElementById('cPago').addEventListener('click', e => { const b = e.target.closest('[data-p2]'); if (b) { pago = b.dataset.p2; renderCart(); } });
+document.getElementById('cDesc').addEventListener('input', totales);
+document.getElementById('cPaga').addEventListener('input', totales);
+document.getElementById('cartClear').addEventListener('click', () => { if (!cart.length) return; cart = []; limpiarVenta(); toast('Venta vaciada'); });
+
+function limpiarVenta() {
+  cart = []; pago = 'Efectivo';
+  ['cCliente', 'cDesc', 'cPaga'].forEach(id => { document.getElementById(id).value = ''; });
+  renderCart(); renderPOS();
+}
+
+document.getElementById('cCobrar').addEventListener('click', async () => {
+  if (!cart.length) return;
+  const t = totales();
+  if (pago === 'Efectivo' && t.paga > 0 && t.paga < t.tot) { toast('El monto que paga es menor al total', true); return; }
+  const btn = document.getElementById('cCobrar'); btn.disabled = true;
+  try {
+    const d = await run('registrarVenta', {
+      items: cart.map(c => ({ productoId: c.id, cantidad: c.cant, precio: c.precio })),
+      cliente: document.getElementById('cCliente').value, pago, descuento: t.desc, nota: ''
+    });
+    const extra = pago === 'Efectivo' && t.paga > 0 ? { paga: t.paga, vuelto: r2(t.paga - t.tot) } : null;
+    limpiarVenta(); toggleCart(false);
+    verTicket(d.ticket, extra, true);
+  } catch (e) { btn.disabled = false; }
+});
+
+/* =====================================================================
+   COMPROBANTE
+   ===================================================================== */
+function buscarTicket(key) {
+  return agruparTickets(S.movimientos.filter(m => (m.tipo === 'Venta' || m.tipo === 'Venta anulada') && (m.ticket || m.id) === key))[0];
+}
+function ticketHTML(t, extra) {
+  return `<div class="ticket">
+    <div class="tk-logo">${NEGOCIO}</div><div class="tk-sub">Comprobante de venta</div>
+    <div class="tk-meta">
+      <div><span>N° de venta</span><b>${esc(t.num)}</b></div>
+      <div><span>Fecha</span><b>${fFechaHora(t.fecha)}</b></div>
+      <div><span>Cliente</span><b>${esc(t.cliente || '—')}</b></div>
+      <div><span>Pago</span><b>${esc(t.pago || '—')}</b></div>
+    </div>
+    <table class="tk-items">${t.items.map(m => `<tr><td>${m.cantidad} × ${esc(m.prenda)}<small>${esc(det(m)) || ''}${m.cantidad > 1 ? ' · ' + sol(m.precio) + ' c/u' : ''}</small></td><td class="r">${sol(m.cantidad * m.precio)}</td></tr>`).join('')}</table>
+    <div class="tk-sum">
+      ${t.descuento > 0 ? `<div><span>Subtotal</span><span>${sol(t.subtotal)}</span></div><div><span>Descuento</span><span>− ${sol(t.descuento)}</span></div>` : ''}
+      <div class="big"><span>Total</span><span>${sol(t.total)}</span></div>
+      ${extra ? `<div><span>Pagó con</span><span>${sol(extra.paga)}</span></div><div><span>Vuelto</span><span>${sol(extra.vuelto)}</span></div>` : ''}
+    </div>
+    ${t.anulada ? '<div class="tk-anul">VENTA ANULADA</div>' : ''}
+    <div class="tk-thanks">¡Gracias por tu compra!</div></div>`;
+}
+function textoWhatsApp(t) {
+  let s = `*${NEGOCIO}*\nComprobante ${t.num} · ${fFechaHora(t.fecha)}\n`;
+  if (t.cliente) s += `Cliente: ${t.cliente}\n`;
+  s += '\n';
+  t.items.forEach(m => { s += `${m.cantidad} × ${m.prenda}${m.talla ? ' T.' + m.talla : ''}${m.color ? ' ' + m.color : ''} — ${sol(m.cantidad * m.precio)}\n`; });
+  if (t.descuento > 0) s += `\nDescuento: − ${sol(t.descuento)}`;
+  s += `\n*Total: ${sol(t.total)}*\nPago: ${t.pago || '—'}\n\n¡Gracias por tu compra!`;
+  return s;
+}
+function verTicket(key, extra, recien) {
+  const t = buscarTicket(key);
+  if (!t) { toast('No se encontró la venta', true); return; }
+  abrirModal(`
+    ${recien ? `<div class="ok-head"><span class="circ">${ic('check', 28)}</span><h3>¡Venta registrada!</h3><p class="muted">El stock ya se descontó.</p></div>`
+             : `<div class="m-h"><div><h3>Venta ${esc(t.num)}</h3><p>${fFechaHora(t.fecha)}</p></div><button class="icon-btn" onclick="cerrarModal()" aria-label="Cerrar">${ic('x')}</button></div>`}
+    <div class="m-b">${ticketHTML(t, extra)}</div>
+    <div class="m-f">
+      ${!recien && !t.anulada ? `<button class="btn btn-danger left" id="tkAnular">${ic('trash', 16)}Anular venta</button>` : ''}
+      <button class="btn btn-soft" id="tkPrint">${ic('printer', 16)}Imprimir</button>
+      <a class="btn btn-soft" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(textoWhatsApp(t))}">${ic('send', 16)}WhatsApp</a>
+      ${recien ? `<button class="btn btn-primary" onclick="cerrarModal();irA('vender')">${ic('plus', 16)}Nueva venta</button>` : `<button class="btn btn-primary" onclick="cerrarModal()">Listo</button>`}
+    </div>`);
+  document.getElementById('tkPrint').onclick = () => imprimirTicket(t, extra);
+  const an = document.getElementById('tkAnular');
+  if (an) an.onclick = async () => {
+    const ok = await confirmar({ titulo: '¿Anular la venta ' + t.num + '?', texto: `Las ${t.unidades} prendas vuelven al stock y la venta deja de contar en tus reportes. Quedará marcada como “Anulada” en el historial.`, ok: 'Sí, anular venta', peligro: true });
+    if (!ok) return;
+    try { await run('anularVenta', t.key); toast('Venta anulada. Las prendas volvieron al stock.'); } catch (e) {}
+  };
+}
+function imprimirTicket(t, extra) {
+  document.getElementById('printArea').innerHTML = ticketHTML(t, extra);
+  document.body.classList.add('print-ticket');
+  setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove('print-ticket'), 500); }, 50);
+}
+
+/* =====================================================================
+   INVENTARIO
+   ===================================================================== */
+function renderInventario() {
+  const P = S.productos;
+  const catSel = document.getElementById('invCat'), cv = catSel.value;
+  catSel.innerHTML = '<option value="">Todas las categorías</option>' + CATEGORIAS.map(c => `<option>${c}</option>`).join('');
+  catSel.value = cv;
+  const fs = document.getElementById('invStock').value;
+  const low = P.filter(esBajo).length;
+
+  document.getElementById('invStats').innerHTML =
+    `<div class="stat"><div class="l">Productos</div><div class="v">${ent(P.length)}</div></div>
+     <div class="stat"><div class="l">Prendas en stock</div><div class="v">${ent(sum(P, p => p.stock))}</div></div>
+     <div class="stat"><div class="l">Invertido (a costo)</div><div class="v">${sol(sum(P, p => p.stock * p.costo))}</div></div>
+     <div class="stat"><div class="l">Valor de venta</div><div class="v">${sol(sum(P, p => p.stock * p.precio))}</div></div>
+     <button class="stat ${fs === 'bajo' ? 'on' : ''}" onclick="document.getElementById('invStock').value='${fs === 'bajo' ? '' : 'bajo'}';renderInventario()"><div class="l">Por reponer</div><div class="v" style="color:${low ? 'var(--warn)' : 'inherit'}">${ent(low)}</div></button>`;
+
+  const q = document.getElementById('invQ').value.trim().toLowerCase();
+  const L = P.filter(p =>
+    (!cv || categoria(p.prenda) === cv) &&
+    (!q || coincide(p.prenda + ' ' + p.talla + ' ' + p.color + ' ' + p.codigo, q)) &&
+    (!fs || (fs === 'hay' ? p.stock > 0 : fs === 'bajo' ? esBajo(p) : p.stock === 0))).sort(ordenProd);
+
+  const grupos = [];
+  L.forEach(p => { let g = grupos[grupos.length - 1]; if (!g || g.prenda !== p.prenda) { g = { prenda: p.prenda, items: [] }; grupos.push(g); } g.items.push(p); });
+
+  if (!L.length) {
+    const html = P.length ? vacio('search', 'No hay productos con ese filtro')
+      : vacio('box', 'Aún no tienes productos', '<br><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="abrirNuevo()">Agregar productos</button>');
+    document.getElementById('invTbl').innerHTML = html;
+    document.getElementById('invCards').innerHTML = `<div class="card">${html}</div>`;
+    return;
+  }
+  const accs = p => `<button class="btn btn-soft btn-sm" onclick="venderDesde('${p.id}')" ${p.stock === 0 ? 'disabled' : ''}>${ic('cart', 15)}Vender</button>
+      <button class="btn btn-soft btn-sm" onclick="abrirIngreso('${p.id}')">${ic('in', 15)}Ingreso</button>
+      <button class="btn btn-soft btn-sm" onclick="abrirEditar('${p.id}')">${ic('edit', 15)}Editar</button>`;
+
+  document.getElementById('invTbl').innerHTML = `<table class="tbl"><thead><tr>
+      <th>Código</th><th>Talla</th><th>Color</th><th>Stock</th><th class="r">Costo</th><th class="r">Precio</th><th class="r">Ganancia</th><th class="r">Acciones</th></tr></thead><tbody>
+    ${grupos.map(g => `<tr class="grp"><td colspan="8">${esc(g.prenda)}<span>${ent(sum(g.items, p => p.stock))} prendas · ${g.items.length} ${g.items.length === 1 ? 'variante' : 'variantes'}</span></td></tr>` +
+      g.items.map(p => `<tr>
+        <td class="muted" style="white-space:nowrap">${esc(p.codigo || '—')}</td>
+        <td><b>${esc(p.talla) || '—'}</b></td><td>${esc(p.color) || '—'}</td>
+        <td>${stockBadge(p)}</td>
+        <td class="r">${sol(p.costo)}</td><td class="r"><b>${sol(p.precio)}</b></td>
+        <td class="r">${sol(p.precio - p.costo)}<span class="code">${pct(p.precio - p.costo, p.precio)}%</span></td>
+        <td><div class="acts">${accs(p)}</div></td></tr>`).join('')).join('')}
+    </tbody></table>`;
+
+  document.getElementById('invCards').innerHTML = grupos.map(g => `<div class="grp-h">${esc(g.prenda)}<span>${ent(sum(g.items, p => p.stock))} prendas</span></div>` +
+    g.items.map(p => `<div class="icard">
+      <div class="icard-h"><div><div class="nm">${esc(det(p)) || esc(p.prenda)}</div>
+        <div class="tags">${stockBadge(p)}${p.codigo ? `<span class="badge b-gray">${esc(p.codigo)}</span>` : ''}</div></div>
+        <div class="stk-big">${p.stock}<small>en stock</small></div></div>
+      <div class="pr"><span>Costo <b>${sol(p.costo)}</b></span><span>Precio <b>${sol(p.precio)}</b></span><span>Ganas <b>${sol(p.precio - p.costo)}</b></span></div>
+      <div class="acts">${accs(p)}</div></div>`).join('')).join('');
+}
+['invQ', 'invCat', 'invStock'].forEach(id => document.getElementById(id).addEventListener(id === 'invQ' ? 'input' : 'change', renderInventario));
+
+function venderDesde(id) { irA('vender'); agregarAlCarrito(id); if (window.innerWidth <= 900) toggleCart(true); }
+
+/* ---- Modal: agregar productos (varias tallas a la vez) ---- */
+let nTallas = [];
+function abrirNuevo() {
+  const grupos = CATEGORIAS.filter(c => c !== 'Otros').map(c => ({ c, items: PRENDAS.filter(p => p.c === c).map(p => p.n) }));
+  const extras = [...new Set(S.productos.map(p => p.prenda))].filter(n => !PRENDAS.some(p => p.n === n)).sort();
+  abrirModal(`
+    <div class="m-h"><div><h3>Agregar productos</h3><p>Registra una prenda en todas sus tallas de una sola vez. Si ya existe, se suma al stock.</p></div>
+      <button class="icon-btn" onclick="cerrarModal()" aria-label="Cerrar">${ic('x')}</button></div>
+    <form id="fNuevo" novalidate>
+      <div class="m-b">
+        <div class="field"><label for="nPrenda">Prenda</label>
+          <select class="input" id="nPrenda"><option value="">— Elige la prenda —</option>
+            ${grupos.map(g => `<optgroup label="${g.c}">${g.items.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>`).join('')}
+            ${extras.length ? `<optgroup label="Otras que ya registraste">${extras.map(n => `<option>${esc(n)}</option>`).join('')}</optgroup>` : ''}
+            <option value="__otra">＋ Otra prenda (escribir nombre)…</option></select>
+          <input class="input" id="nOtra" placeholder="Nombre de la nueva prenda" hidden style="margin-top:8px"></div>
+        <div class="field"><label for="nColor">Color</label><input class="input" id="nColor" list="dlColores" placeholder="Ej. Negro" autocomplete="off">
+          <datalist id="dlColores">${[...new Set([...COLORES, ...S.productos.map(p => p.color).filter(Boolean)])].map(c => `<option value="${esc(c)}">`).join('')}</datalist></div>
+        <div class="row2">
+          <div class="field"><label for="nCosto">Precio de costo (S/)</label><input class="input" id="nCosto" type="number" min="0" step="0.5" inputmode="decimal" placeholder="Lo que te cuesta"></div>
+          <div class="field"><label for="nPrecio">Precio de venta (S/)</label><input class="input" id="nPrecio" type="number" min="0" step="0.5" inputmode="decimal" placeholder="A cuánto lo vendes"></div>
+        </div>
+        <div class="field"><span class="lbl">Tallas y cantidades</span>
+          <div class="seg" id="nSet"><button type="button" data-s="letras" class="on">XS a XXL</button><button type="button" data-s="numeros">Números 26–38</button><button type="button" data-s="unica">Talla única</button></div>
+          <div class="tallas" id="nTallas"></div>
+          <div><button type="button" class="link" id="nOtraTalla" style="margin-top:8px">＋ Agregar otra talla</button></div>
+        </div>
+        <div class="field"><label for="nMin">Avisarme cuando queden</label>
+          <div class="inline"><input class="input" id="nMin" type="number" min="0" step="1" value="2"><span class="muted">prendas o menos (por talla)</span></div></div>
+        <div class="resumen" id="nResumen"></div>
+      </div>
+      <div class="m-f"><button type="button" class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn btn-primary" type="submit" id="nGuardar">${ic('check', 16)}Guardar productos</button></div>
+    </form>`, 'wide');
+
+  const f = document.getElementById('fNuevo');
+  const setTallas = s => { nTallas = TALLAS_SETS[s].map(t => ({ t, q: '' })); pintarTallas(); };
+  const pintarTallas = () => {
+    document.getElementById('nTallas').innerHTML = nTallas.map((x, i) => `<label class="talla-in ${Number(x.q) > 0 ? 'has' : ''}">
+      ${x.custom ? `<input class="tname" data-i="${i}" data-k="t" value="${esc(x.t)}" placeholder="Talla">` : `<span class="tl">${esc(x.t)}</span>`}
+      <input type="number" inputmode="numeric" min="0" step="1" data-i="${i}" data-k="q" value="${esc(x.q)}" placeholder="0" aria-label="Cantidad talla ${esc(x.t)}"></label>`).join('');
+    resumenNuevo();
+  };
+  const resumenNuevo = () => {
+    const v = nTallas.filter(x => Number(x.q) > 0 && String(x.t).trim());
+    const u = sum(v, x => Math.round(Number(x.q)));
+    const costo = Number(document.getElementById('nCosto').value) || 0, precio = Number(document.getElementById('nPrecio').value) || 0;
+    let html = v.length ? `Se registrarán <b>${v.length} ${v.length === 1 ? 'talla' : 'tallas'}</b> con <b>${u} prendas</b> en total` : 'Escribe cuántas prendas tienes en cada talla.';
+    if (v.length && costo) html += ` · Inversión <b>${sol(u * costo)}</b>`;
+    if (precio && costo) html += `<br>Ganas <b>${sol(precio - costo)}</b> por prenda (${pct(precio - costo, precio)}% de margen).`;
+    document.getElementById('nResumen').innerHTML = html;
+  };
+  document.getElementById('nPrenda').onchange = e => {
+    const otra = e.target.value === '__otra';
+    document.getElementById('nOtra').hidden = !otra;
+    if (otra) document.getElementById('nOtra').focus();
+  };
+  document.getElementById('nSet').onclick = e => {
+    const b = e.target.closest('[data-s]'); if (!b) return;
+    document.querySelectorAll('#nSet button').forEach(x => x.classList.toggle('on', x === b));
+    setTallas(b.dataset.s);
+  };
+  document.getElementById('nOtraTalla').onclick = () => {
+    nTallas.push({ t: '', q: '', custom: true }); pintarTallas();
+    const ins = document.querySelectorAll('#nTallas .tname'); ins[ins.length - 1].focus();
+  };
+  document.getElementById('nTallas').addEventListener('input', e => {
+    const i = e.target.dataset.i; if (i == null) return;
+    nTallas[+i][e.target.dataset.k] = e.target.value;
+    if (e.target.dataset.k === 'q') e.target.closest('.talla-in').classList.toggle('has', Number(e.target.value) > 0);
+    resumenNuevo();
+  });
+  document.getElementById('nCosto').oninput = resumenNuevo;
+  document.getElementById('nPrecio').oninput = resumenNuevo;
+  setTallas('letras');
+
+  f.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const sel = document.getElementById('nPrenda').value;
+    const prenda = sel === '__otra' ? document.getElementById('nOtra').value.trim() : sel;
+    if (!prenda) { toast('Elige o escribe el nombre de la prenda', true); return; }
+    const precio = Number(document.getElementById('nPrecio').value);
+    if (!(precio > 0)) { toast('Escribe el precio de venta', true); document.getElementById('nPrecio').focus(); return; }
+    const tallas = nTallas.filter(x => Number(x.q) > 0 && String(x.t).trim()).map(x => ({ talla: x.t, cantidad: x.q }));
+    if (!tallas.length) { toast('Escribe la cantidad de al menos una talla', true); return; }
+    const b = document.getElementById('nGuardar'); b.disabled = true;
+    try {
+      const d = await run('guardarProductos', { prenda, color: document.getElementById('nColor').value, costo: document.getElementById('nCosto').value, precio, minimo: document.getElementById('nMin').value, tallas });
+      cerrarModal();
+      const partes = [];
+      if (d.creados) partes.push(d.creados + (d.creados === 1 ? ' producto nuevo' : ' productos nuevos'));
+      if (d.sumados) partes.push(d.sumados + (d.sumados === 1 ? ' actualizado' : ' actualizados') + ' (se sumó al stock)');
+      toast('Listo: ' + partes.join(' y '));
+    } catch (e) { b.disabled = false; }
+  });
+}
+
+/* ---- Modal: editar producto ---- */
+function abrirEditar(id) {
+  const p = PM[id]; if (!p) return;
+  const movs = S.movimientos.filter(m => m.productoId === id).slice(0, 6);
+  abrirModal(`
+    <div class="m-h"><div><h3>Editar producto</h3><p>${esc(p.codigo || '')} · ${esc(categoria(p.prenda))}</p></div>
+      <button class="icon-btn" onclick="cerrarModal()" aria-label="Cerrar">${ic('x')}</button></div>
+    <form id="fEdit" novalidate><div class="m-b">
+      <div class="field"><label for="ePrenda">Prenda</label><input class="input" id="ePrenda" value="${esc(p.prenda)}"></div>
+      <div class="row2">
+        <div class="field"><label for="eTalla">Talla</label><input class="input" id="eTalla" value="${esc(p.talla)}"></div>
+        <div class="field"><label for="eColor">Color</label><input class="input" id="eColor" value="${esc(p.color)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="eCosto">Precio de costo (S/)</label><input class="input" id="eCosto" type="number" min="0" step="0.5" value="${p.costo}"></div>
+        <div class="field"><label for="ePrecio">Precio de venta (S/)</label><input class="input" id="ePrecio" type="number" min="0" step="0.5" value="${p.precio}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="eStock">Stock actual</label><input class="input" id="eStock" type="number" min="0" step="1" value="${p.stock}"></div>
+        <div class="field"><label for="eMin">Avisar cuando queden</label><input class="input" id="eMin" type="number" min="0" step="1" value="${p.minimo}"></div>
+      </div>
+      <div class="field" id="eMotivoF" hidden><label for="eMotivo">¿Por qué cambias el stock?</label>
+        <select class="input" id="eMotivo"><option>Conteo físico (inventario)</option><option>Prenda dañada</option><option>Prenda perdida</option><option>Regalo o muestra</option><option>Corrección de error</option></select></div>
+      <div class="hint" style="margin-bottom:14px">Para mercadería nueva usa <b>Ingreso</b>. Cambia el stock aquí solo para corregir (queda registrado como ajuste).</div>
+      ${movs.length ? `<div class="lbl" style="margin-bottom:4px">Últimos movimientos</div>${movs.map(m => `<div class="li"><div class="grow"><div class="t" style="font-weight:500">${esc(m.tipo)}${m.ticket ? ' · ' + esc(m.ticket) : ''}</div><div class="d">${fCorta(m.fecha)}${m.nota ? ' · ' + esc(m.nota) : ''}</div></div><b class="num">${m.tipo.indexOf('Venta') === 0 || m.cantidad < 0 ? '−' : '+'}${Math.abs(m.cantidad)}</b></div>`).join('')}` : ''}
+    </div>
+    <div class="m-f"><button type="button" class="btn btn-danger left" id="eDel">${ic('trash', 16)}Eliminar</button>
+      <button type="button" class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" type="submit" id="eGuardar">${ic('check', 16)}Guardar cambios</button></div></form>`);
+  document.getElementById('eStock').oninput = e => { document.getElementById('eMotivoF').hidden = Number(e.target.value) === p.stock; };
+  document.getElementById('eDel').onclick = async () => {
+    const ok = await confirmar({ titulo: '¿Eliminar este producto?', texto: `${p.prenda} · ${det(p) || 'sin talla'}. Se quita del inventario; las ventas pasadas se conservan en el historial.`, ok: 'Sí, eliminar', peligro: true });
+    if (!ok) return;
+    try { await run('eliminarProducto', id); toast('Producto eliminado'); } catch (e) {}
+  };
+  document.getElementById('fEdit').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const b = document.getElementById('eGuardar'); b.disabled = true;
+    try {
+      await run('editarProducto', { id, prenda: document.getElementById('ePrenda').value, talla: document.getElementById('eTalla').value, color: document.getElementById('eColor').value,
+        costo: document.getElementById('eCosto').value, precio: document.getElementById('ePrecio').value, stock: document.getElementById('eStock').value,
+        minimo: document.getElementById('eMin').value, motivo: document.getElementById('eMotivoF').hidden ? '' : document.getElementById('eMotivo').value });
+      cerrarModal(); toast('Cambios guardados');
+    } catch (e) { b.disabled = false; }
+  });
+}
+
+/* ---- Modal: ingreso de mercadería ---- */
+function abrirIngreso(id) {
+  if (!S.productos.length) { abrirNuevo(); return; }
+  const opciones = filtro => {
+    const f = (filtro || '').toLowerCase();
+    const L = S.productos.filter(p => !f || coincide(p.prenda + ' ' + p.talla + ' ' + p.color + ' ' + p.codigo, f)).sort(ordenProd);
+    const g = {}; L.forEach(p => (g[p.prenda] = g[p.prenda] || []).push(p));
+    return Object.keys(g).map(n => `<optgroup label="${esc(n)}">${g[n].map(p => `<option value="${p.id}">${esc(p.prenda)}${det(p) ? ' · ' + esc(det(p)) : ''} — stock ${p.stock}</option>`).join('')}</optgroup>`).join('');
+  };
+  abrirModal(`
+    <div class="m-h"><div><h3>Ingreso de mercadería</h3><p>Suma prendas nuevas al stock de un producto.</p></div>
+      <button class="icon-btn" onclick="cerrarModal()" aria-label="Cerrar">${ic('x')}</button></div>
+    <form id="fIng" novalidate><div class="m-b">
+      <div class="field"><label for="iBus">Producto</label>
+        <div class="search" style="margin-bottom:8px"><i data-ic="search"></i><input class="input" id="iBus" placeholder="Filtrar por prenda, talla o color…" autocomplete="off"></div>
+        <select class="input" id="iProd" size="1">${opciones()}</select></div>
+      <div class="row2">
+        <div class="field"><label for="iCant">Cantidad que llegó</label><input class="input" id="iCant" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+        <div class="field"><label for="iCosto">Costo por prenda (S/)</label><input class="input" id="iCosto" type="number" min="0" step="0.5" inputmode="decimal"></div>
+      </div>
+      <div class="field"><label for="iNota">Nota <span class="muted">(opcional)</span></label><input class="input" id="iNota" placeholder="Ej. Compra a proveedor de Gamarra"></div>
+      <div class="resumen" id="iRes"></div>
+      <div class="hint" style="margin-bottom:14px">¿Llegaron varias tallas de la misma prenda? Usa <button type="button" class="link" onclick="abrirNuevo()">Agregar productos</button> con la misma prenda y color: se suman al stock de cada talla.</div>
+    </div>
+    <div class="m-f"><button type="button" class="btn btn-ghost" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" type="submit" id="iGuardar">${ic('in', 16)}Agregar al stock</button></div></form>`);
+  pintarIconos(document.getElementById('modal'));
+  const sel = document.getElementById('iProd');
+  if (id) sel.value = id;
+  const upd = (cambioProd) => {
+    const p = PM[sel.value];
+    if (!p) { document.getElementById('iRes').innerHTML = 'No hay productos con ese filtro.'; return; }
+    if (cambioProd) document.getElementById('iCosto').value = p.costo || '';
+    const c = Math.max(0, Math.round(Number(document.getElementById('iCant').value) || 0));
+    document.getElementById('iRes').innerHTML = `Stock de <b>${esc(p.prenda)}</b> ${esc(det(p))}: <b>${p.stock}</b> → <b>${p.stock + c}</b>`;
+  };
+  document.getElementById('iBus').oninput = e => { const v = sel.value; sel.innerHTML = opciones(e.target.value); if (PM[v] && [...sel.options].some(o => o.value === v)) sel.value = v; upd(true); };
+  sel.onchange = () => upd(true);
+  document.getElementById('iCant').oninput = () => upd(false);
+  upd(true);
+  document.getElementById('fIng').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    if (!PM[sel.value]) { toast('Elige un producto', true); return; }
+    const b = document.getElementById('iGuardar'); b.disabled = true;
+    try {
+      await run('registrarIngreso', { productoId: sel.value, cantidad: document.getElementById('iCant').value, costo: document.getElementById('iCosto').value, nota: document.getElementById('iNota').value });
+      cerrarModal(); toast('Stock actualizado');
+    } catch (e) { b.disabled = false; }
+  });
+}
+
+/* =====================================================================
+   MOVIMIENTOS
+   ===================================================================== */
+document.getElementById('movTab').addEventListener('click', e => {
+  const b = e.target.closest('[data-v]'); if (!b) return;
+  movTab = b.dataset.v;
+  document.querySelectorAll('#movTab button').forEach(x => x.classList.toggle('on', x === b));
+  document.getElementById('movQ').placeholder = movTab === 'ventas' ? 'Buscar por N° de venta, cliente o prenda…' : 'Buscar por prenda, talla o nota…';
+  renderMovimientos();
+});
+document.getElementById('movQ').addEventListener('input', () => renderMovimientos());
+
+function renderMovimientos() {
+  const r = rango('mov'), q = document.getElementById('movQ').value.trim().toLowerCase();
+  const stats = document.getElementById('movStats'), body = document.getElementById('movBody');
+  const st = (l, v) => `<div class="stat"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+
+  if (movTab === 'ventas') {
+    let T = agruparTickets(S.movimientos.filter(m => (m.tipo === 'Venta' || m.tipo === 'Venta anulada') && enRango(m.fecha, r)));
+    if (q) T = T.filter(t => coincide(t.num + ' ' + t.cliente + ' ' + t.pago + ' ' + t.items.map(i => i.prenda + ' ' + i.talla + ' ' + i.color).join(' '), q));
+    const ok = T.filter(t => !t.anulada), tot = sum(ok, t => t.total);
+    stats.innerHTML = st('Ventas', ent(ok.length)) + st('Total vendido', sol(tot)) + st('Prendas vendidas', ent(sum(ok, t => t.unidades))) + st('Venta promedio', sol(ok.length ? tot / ok.length : 0));
+    body.innerHTML = T.length ? `<table class="tbl"><thead><tr><th>N° venta</th><th>Fecha</th><th class="hide-m">Cliente</th><th class="hide-m">Prendas</th><th class="hide-m">Pago</th><th class="r">Total</th></tr></thead><tbody>
+      ${T.map(t => `<tr class="click" data-tk="${esc(t.key)}">
+        <td><b>${esc(t.num)}</b>${t.anulada ? ' <span class="badge b-bad">Anulada</span>' : ''}</td>
+        <td>${fCorta(t.fecha)}<div class="show-m hint">${esc(t.cliente || 'Cliente')} · ${esc(t.pago || '—')} · ${t.unidades} prendas</div></td>
+        <td class="hide-m">${esc(t.cliente || '—')}</td>
+        <td class="hide-m">${t.unidades} · <span class="muted">${esc(t.items.map(m => m.prenda + (m.talla ? ' ' + m.talla : '')).slice(0, 2).join(', '))}${t.items.length > 2 ? '…' : ''}</span></td>
+        <td class="hide-m"><span class="badge b-gray">${esc(t.pago || '—')}</span></td>
+        <td class="r"><b class="${t.anulada ? 'strike' : ''}">${sol(t.total)}</b></td></tr>`).join('')}</tbody></table>`
+      : vacio('receipt', 'No hay ventas en este periodo', 'Cambia el periodo o la búsqueda.');
+  } else {
+    let L = S.movimientos.filter(m => m.tipo.indexOf('Venta') !== 0 && enRango(m.fecha, r));
+    if (q) L = L.filter(m => coincide(m.prenda + ' ' + m.talla + ' ' + m.color + ' ' + m.nota + ' ' + m.tipo, q));
+    const ing = L.filter(m => m.tipo === 'Ingreso');
+    stats.innerHTML = st('Ingresos', ent(ing.length)) + st('Prendas que entraron', ent(sum(ing, m => m.cantidad))) + st('Invertido', sol(sum(ing, m => m.total))) + st('Ajustes', ent(L.filter(m => m.tipo === 'Ajuste').length));
+    const badge = t => t === 'Ingreso' ? 'b-ok' : t === 'Ajuste' ? 'b-warn' : 'b-gray';
+    body.innerHTML = L.length ? `<table class="tbl"><thead><tr><th>Fecha</th><th>Tipo</th><th>Producto</th><th class="r">Cantidad</th><th class="r hide-m">Costo</th><th class="r hide-m">Total</th><th class="hide-m">Nota</th><th></th></tr></thead><tbody>
+      ${L.map(m => { const anul = / anulado$/.test(m.tipo); return `<tr>
+        <td style="white-space:nowrap">${fCorta(m.fecha)}</td>
+        <td><span class="badge ${badge(m.tipo)}">${esc(m.tipo)}</span></td>
+        <td><span class="pname ${anul ? 'strike' : ''}">${esc(m.prenda)}</span><span class="code">${esc(det(m))}</span></td>
+        <td class="r"><b class="${anul ? 'strike' : ''}">${m.cantidad < 0 ? '−' : '+'}${Math.abs(m.cantidad)}</b></td>
+        <td class="r hide-m">${sol(m.costo)}</td><td class="r hide-m">${m.tipo === 'Ingreso' ? sol(m.total) : '—'}</td>
+        <td class="hide-m hint">${esc(m.nota)}</td>
+        <td class="r">${anul ? '' : `<button class="btn btn-soft btn-sm" data-anular="${m.id}">Anular</button>`}</td></tr>`; }).join('')}</tbody></table>`
+      : vacio('in', 'No hay entradas ni ajustes en este periodo');
+  }
+}
+document.getElementById('movBody').addEventListener('click', async e => {
+  const a = e.target.closest('[data-anular]');
+  if (a) {
+    const m = S.movimientos.find(x => x.id === a.dataset.anular);
+    const ok = await confirmar({ titulo: '¿Anular este ' + m.tipo.toLowerCase() + '?', texto: `${m.prenda} ${det(m)}: el stock ${m.cantidad >= 0 ? 'bajará' : 'subirá'} ${Math.abs(m.cantidad)} ${Math.abs(m.cantidad) === 1 ? 'prenda' : 'prendas'}.`, ok: 'Sí, anular', peligro: true });
+    if (!ok) return;
+    try { await run('anularMovimiento', m.id); toast('Movimiento anulado'); } catch (x) {}
+    return;
+  }
+  const tr = e.target.closest('tr[data-tk]');
+  if (tr) verTicket(tr.dataset.tk);
+});
+
+/* =====================================================================
+   REPORTES
+   ===================================================================== */
+function renderReportes() {
+  const r = rango('rep');
+  document.getElementById('repRango').textContent = textoRango('rep');
+  const bh = document.getElementById('btnHoja'); bh.hidden = !S.urlHoja; if (S.urlHoja) bh.href = S.urlHoja;
+
+  const T = ticketsValidos().filter(t => enRango(t.fecha, r));
+  const L = []; T.forEach(t => t.items.forEach(m => L.push(m)));
+  const total = sum(T, t => t.total), costo = sum(T, t => t.costo), gan = total - costo, und = sum(T, t => t.unidades);
+
+  let delta = '';
+  if (PER.rep.p !== 'todo') {
+    const n = diasEntre(r.d, r.h) + 1, pd = sumarDias(r.d, -n), ph = sumarDias(r.d, -1);
+    const ant = sum(ticketsValidos().filter(t => { const k = diaKey(t.fecha); return k >= pd && k <= ph; }), t => t.total);
+    delta = ant ? deltaHTML(total, ant) + 'vs. periodo anterior' : '';
+  }
+  document.getElementById('repKpis').innerHTML = [
+    ['hl', 'wallet', 'Total vendido', sol(total), delta || textoRango('rep').split(' · ')[0]],
+    ['', 'receipt', 'N° de ventas', ent(T.length), 'ventas registradas'],
+    ['', 'tag', 'Venta promedio', sol(T.length ? total / T.length : 0), 'por cliente'],
+    ['', 'box', 'Prendas vendidas', ent(und), T.length ? (und / T.length).toFixed(1).replace('.', ',') + ' por venta' : '—'],
+    ['', 'trend', 'Ganancia', sol(gan), 'venta menos costo'],
+    ['', 'chart', 'Margen', pct(gan, total) + '%', 'de cada sol vendido']
+  ].map(k => `<div class="kpi ${k[0]}"><div class="l">${ic(k[1], 16)}${k[2]}</div><div class="v">${k[3]}</div><div class="s">${k[4]}</div></div>`).join('');
+
+  // Serie temporal
+  const hoy = hoyKey();
+  let ini = r.d, fin = r.h < hoy ? r.h : hoy;
+  if (ini === '0000-01-01') ini = T.length ? diaKey(T[T.length - 1].fecha) : fin;
+  const el = document.getElementById('repChart');
+  if (ini > fin) { el.innerHTML = vacio('chart', 'Sin datos en este periodo'); }
+  else {
+    const nd = diasEntre(ini, fin) + 1, porDia = {};
+    T.forEach(t => { const k = diaKey(t.fecha); porDia[k] = porDia[k] || { v: 0, n: 0 }; porDia[k].v += t.total; porDia[k].n++; });
+    let data = [];
+    if (nd <= 62) {
+      document.getElementById('repChartT').textContent = 'Ventas por día';
+      for (let i = 0; i < nd; i++) {
+        const k = sumarDias(ini, i), d = keyDate(k), x = porDia[k] || { v: 0, n: 0 };
+        data.push({ label: d.getDate() + '/' + (d.getMonth() + 1), value: x.v, tip: d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'short' }) + ' · ' + x.n + (x.n === 1 ? ' venta' : ' ventas') });
+      }
+    } else {
+      document.getElementById('repChartT').textContent = 'Ventas por mes';
+      const a = keyDate(ini), b = keyDate(fin);
+      for (let d = new Date(a.getFullYear(), a.getMonth(), 1); d <= b; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) {
+        const mk = diaKey(d).slice(0, 7);
+        const tt = T.filter(t => diaKey(t.fecha).slice(0, 7) === mk);
+        data.push({ label: d.toLocaleDateString('es-PE', { month: 'short', year: '2-digit' }), value: sum(tt, t => t.total), tip: d.toLocaleDateString('es-PE', { month: 'long', year: 'numeric' }) + ' · ' + tt.length + ' ventas' });
+      }
+    }
+    document.getElementById('repChartS').textContent = textoRango('rep');
+    barChart(el, data, 220);
+  }
+
+  // Categorías
+  const cat = {}; L.forEach(m => { const c = categoria(m.prenda); cat[c] = cat[c] || { v: 0, u: 0 }; cat[c].v += m.total; cat[c].u += m.cantidad; });
+  hbars(document.getElementById('repCat'), Object.keys(cat).map(c => ({ label: c, value: cat[c].v, sub: `${ent(cat[c].u)} prendas · ${pct(cat[c].v, total)}% del total` })).sort((a, b) => b.value - a.value), sol);
+
+  // Pagos
+  const pg = {}; T.forEach(t => { const k = t.pago || 'Sin registrar'; pg[k] = pg[k] || { v: 0, n: 0 }; pg[k].v += t.total; pg[k].n++; });
+  hbars(document.getElementById('repPago'), Object.keys(pg).map(k => ({ label: k, value: pg[k].v, sub: `${pg[k].n} ${pg[k].n === 1 ? 'venta' : 'ventas'} · ${pct(pg[k].v, total)}%` })).sort((a, b) => b.value - a.value), sol);
+
+  // Tallas
+  const tl = {}; L.forEach(m => { const k = m.talla || 'Sin talla'; tl[k] = (tl[k] || 0) + m.cantidad; });
+  hbars(document.getElementById('repTalla'), Object.keys(tl).map(k => ({ label: 'Talla ' + k, value: tl[k] })).sort((a, b) => b.value - a.value).slice(0, 8), v => ent(v) + ' und.');
+
+  // Top
+  const ag = {};
+  L.forEach(m => { const k = m.prenda + '|' + m.talla + '|' + m.color; ag[k] = ag[k] || { prenda: m.prenda, talla: m.talla, color: m.color, u: 0, s: 0, c: 0 }; ag[k].u += m.cantidad; ag[k].s += m.total; ag[k].c += m.costo * m.cantidad; });
+  const top = Object.values(ag).sort((a, b) => b.u - a.u || b.s - a.s).slice(0, 10);
+  document.getElementById('repTop').innerHTML = top.length ? `<table class="tbl"><thead><tr><th>#</th><th>Prenda</th><th class="r">Und.</th><th class="r">Vendido</th><th class="r hide-m">Ganancia</th></tr></thead><tbody>
+    ${top.map((x, i) => `<tr><td><span class="rank">${i + 1}</span></td><td><span class="pname">${esc(x.prenda)}</span><span class="code">${esc(det(x)) || '—'}</span></td>
+      <td class="r"><b>${ent(x.u)}</b></td><td class="r">${sol(x.s)}</td><td class="r hide-m">${sol(x.s - x.c)}</td></tr>`).join('')}</tbody></table>`
+    : vacio('chart', 'Sin ventas en este periodo');
+}
+
+function imprimirReporte() {
+  irA('reportes');
+  document.body.classList.add('print-report');
+  setTimeout(() => { window.print(); setTimeout(() => document.body.classList.remove('print-report'), 500); }, 80);
+}
+
+/* =====================================================================
+   MODALES
+   ===================================================================== */
+function abrirModal(html, clase) {
+  const m = document.getElementById('modal');
+  m.innerHTML = `<div class="mbox ${clase || ''}" role="dialog" aria-modal="true">${html}</div>`;
+  m.hidden = false;
+  const f = m.querySelector('select, input:not([type=hidden])');
+  if (f && window.innerWidth > 900) setTimeout(() => f.focus(), 60);
+}
+function cerrarModal() { const m = document.getElementById('modal'); m.hidden = true; m.innerHTML = ''; }
+document.getElementById('modal').addEventListener('mousedown', e => { if (e.target.id === 'modal') cerrarModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!document.getElementById('modal').hidden) cerrarModal(); else toggleCart(false); } });
+
+function confirmar(o) {
+  return new Promise(res => {
+    abrirModal(`<div class="m-h"><div><h3>${esc(o.titulo)}</h3></div></div>
+      <div class="m-b"><p style="color:var(--ink2)">${esc(o.texto)}</p></div>
+      <div class="m-f"><button class="btn btn-ghost" id="cfNo">Cancelar</button><button class="btn ${o.peligro ? 'btn-danger' : 'btn-primary'}" id="cfSi">${esc(o.ok || 'Confirmar')}</button></div>`);
+    document.getElementById('cfNo').onclick = () => { cerrarModal(); res(false); };
+    document.getElementById('cfSi').onclick = () => { cerrarModal(); res(true); };
+  });
+}
+
+function ayuda() {
+  abrirModal(`<div class="m-h"><div><h3>¿Cómo se usa?</h3><p>Guía rápida del sistema de Naguara.</p></div><button class="icon-btn" onclick="cerrarModal()" aria-label="Cerrar">${ic('x')}</button></div>
+    <div class="m-b">
+      ${[['plus', 'Agregar productos', 'Elige la prenda y el color, pon el costo y el precio, y escribe cuántas tienes de cada talla. Si la prenda ya existe, se suma al stock.'],
+         ['cart', 'Vender', 'Toca las prendas que se lleva el cliente, ajusta cantidad o precio si hace falta, elige cómo pagó y presiona “Cobrar”. El stock se descuenta solo.'],
+         ['receipt', 'Comprobante', 'Después de cobrar puedes imprimirlo o enviarlo por WhatsApp. Lo encuentras luego en “Movimientos”.'],
+         ['in', 'Ingreso de mercadería', 'Cuando llega ropa nueva de una prenda que ya tienes, regístrala aquí para sumar al stock.'],
+         ['list', 'Movimientos', 'Historial de ventas y entradas. Si te equivocaste, abre la venta y presiona “Anular”: las prendas regresan al stock.'],
+         ['chart', 'Reportes', 'Elige el periodo y mira cuánto vendiste, cuánto ganaste, lo más vendido y los métodos de pago.']]
+        .map(x => `<div class="li"><span class="rank">${ic(x[0], 15)}</span><div class="grow"><div class="t">${x[1]}</div><div style="font-size:13px;color:var(--ink2)">${x[2]}</div></div></div>`).join('')}
+    </div>
+    <div class="m-f"><button class="btn btn-primary" onclick="cerrarModal()">Entendido</button></div>`, 'wide');
+}
+
+/* =====================================================================
+   MODO PRUEBA (solo cuando se abre fuera de Google)
+   ===================================================================== */
+const Demo = (() => {
+  const K = 'naguara_demo_v2';
+  const nuevo = () => ({ productos: [], movimientos: [], urlHoja: '' });
+  const load = () => { try { return JSON.parse(store.get(K)) || nuevo(); } catch (e) { return nuevo(); } };
+  const save = d => { store.set(K, JSON.stringify(d)); return JSON.parse(JSON.stringify(d)); };
+  const uid = p => p + Math.random().toString(36).slice(2, 10).toUpperCase();
+  const n = v => Number(v) || 0;
+  const lim = v => String(v == null ? '' : v).trim().replace(/\s+/g, ' ');
+  const eq = (a, b) => lim(a).toLowerCase() === lim(b).toLowerCase();
+  const maxN = (arr, pre) => arr.reduce((m, s) => { s = String(s || ''); if (s.indexOf(pre) === 0) { const x = parseInt(s.slice(pre.length), 10); if (x > m) return x; } return m; }, 0);
+  const mov = (d, o) => d.movimientos.unshift(Object.assign({ id: uid('M'), fecha: new Date().toISOString(), nota: '', ticket: '', pago: '', cliente: '', descuento: 0 }, o));
+  return {
+    login: (u, c) => (lim(u).toLowerCase() === 'camila' && c === 'camila12') ? { ok: true, token: 'demo' } : { ok: false },
+    obtenerDatos: () => load(),
+    guardarProductos: (t, f) => {
+      const d = load(), prenda = lim(f.prenda), color = lim(f.color), costo = n(f.costo), precio = n(f.precio), minimo = Math.round(n(f.minimo));
+      if (!prenda) throw new Error('Elige o escribe el nombre de la prenda.');
+      const por = {}; (f.tallas || []).forEach(x => { const k = lim(x.talla).toUpperCase(), q = Math.round(n(x.cantidad)); if (q > 0) por[k] = (por[k] || 0) + q; });
+      if (!Object.keys(por).length) throw new Error('Escribe cuántas prendas tienes de al menos una talla.');
+      let creados = 0, sumados = 0, mx = maxN(d.productos.map(p => p.codigo), 'NG-');
+      Object.keys(por).forEach(talla => {
+        const q = por[talla];
+        let p = d.productos.find(x => eq(x.prenda, prenda) && eq(x.talla, talla) && eq(x.color, color));
+        const existia = !!p;
+        if (p) { p.stock += q; if (costo) p.costo = costo; if (precio) p.precio = precio; p.minimo = minimo; sumados++; }
+        else { p = { id: uid('P'), codigo: 'NG-' + String(++mx).padStart(4, '0'), prenda, talla, color, stock: q, costo, precio, minimo }; d.productos.push(p); creados++; }
+        mov(d, { tipo: 'Ingreso', productoId: p.id, prenda, talla, color, cantidad: q, precio: costo, total: r2(q * costo), costo, nota: existia ? 'Ingreso de mercadería' : 'Stock inicial' });
+      });
+      return { datos: save(d), creados, sumados };
+    },
+    editarProducto: (t, f) => {
+      const d = load(), p = d.productos.find(x => x.id === f.id); if (!p) throw new Error('No se encontró el producto.');
+      const nuevoP = { prenda: lim(f.prenda), talla: lim(f.talla).toUpperCase(), color: lim(f.color), stock: Math.max(0, Math.round(n(f.stock))), costo: n(f.costo), precio: n(f.precio), minimo: Math.round(n(f.minimo)) };
+      if (d.productos.some(x => x.id !== p.id && eq(x.prenda, nuevoP.prenda) && eq(x.talla, nuevoP.talla) && eq(x.color, nuevoP.color))) throw new Error('Ya existe otro producto con esa misma prenda, talla y color.');
+      const diff = nuevoP.stock - p.stock; Object.assign(p, nuevoP);
+      if (diff) mov(d, { tipo: 'Ajuste', productoId: p.id, prenda: p.prenda, talla: p.talla, color: p.color, cantidad: diff, precio: p.costo, total: 0, costo: p.costo, nota: f.motivo || 'Corrección de stock' });
+      return { datos: save(d) };
+    },
+    eliminarProducto: (t, id) => { const d = load(); d.productos = d.productos.filter(p => p.id !== id); return { datos: save(d) }; },
+    registrarIngreso: (t, f) => {
+      const d = load(), p = d.productos.find(x => x.id === f.productoId); const q = Math.round(n(f.cantidad));
+      if (!p) throw new Error('No se encontró el producto.'); if (q <= 0) throw new Error('La cantidad debe ser mayor a 0.');
+      const costo = f.costo === '' ? p.costo : n(f.costo); p.stock += q; if (costo > 0) p.costo = costo;
+      mov(d, { tipo: 'Ingreso', productoId: p.id, prenda: p.prenda, talla: p.talla, color: p.color, cantidad: q, precio: costo, total: r2(q * costo), costo, nota: lim(f.nota) || 'Ingreso de mercadería' });
+      return { datos: save(d) };
+    },
+    registrarVenta: (t, v) => {
+      const d = load(), items = (v.items || []).map(i => ({ p: d.productos.find(x => x.id === i.productoId), cant: Math.round(n(i.cantidad)), precio: n(i.precio) })).filter(i => i.cant > 0);
+      if (!items.length) throw new Error('La venta no tiene prendas.');
+      items.forEach(i => { if (!i.p) throw new Error('Una de las prendas ya no existe.'); if (i.cant > i.p.stock) throw new Error('No hay suficiente stock de ' + i.p.prenda + ' talla ' + i.p.talla + '. Quedan ' + i.p.stock + '.'); });
+      const sub = items.reduce((s, i) => s + i.cant * i.precio, 0), desc = Math.min(Math.max(0, r2(n(v.descuento))), sub);
+      const ticket = 'V-' + String(maxN(d.movimientos.map(m => m.ticket), 'V-') + 1).padStart(5, '0');
+      let resto = desc; const fecha = new Date().toISOString();
+      items.forEach((i, k) => {
+        const bruto = i.cant * i.precio, dl = k === items.length - 1 ? r2(resto) : r2(sub ? desc * bruto / sub : 0); resto = r2(resto - dl);
+        i.p.stock -= i.cant;
+        mov(d, { fecha, tipo: 'Venta', productoId: i.p.id, prenda: i.p.prenda, talla: i.p.talla, color: i.p.color, cantidad: i.cant, precio: i.precio, total: r2(bruto - dl), costo: i.p.costo, nota: lim(v.nota), ticket, pago: lim(v.pago) || 'Efectivo', cliente: lim(v.cliente), descuento: dl });
+      });
+      return { datos: save(d), ticket };
+    },
+    anularVenta: (t, key) => {
+      const d = load(); let c = 0;
+      d.movimientos.forEach(m => { if (m.tipo === 'Venta' && (m.ticket || m.id) === key) { const p = d.productos.find(x => x.id === m.productoId); if (p) p.stock += m.cantidad; m.tipo = 'Venta anulada'; c++; } });
+      if (!c) throw new Error('No se encontró la venta o ya estaba anulada.');
+      return { datos: save(d) };
+    },
+    anularMovimiento: (t, id) => {
+      const d = load(), m = d.movimientos.find(x => x.id === id); if (!m || (m.tipo !== 'Ingreso' && m.tipo !== 'Ajuste')) throw new Error('Este movimiento no se puede anular.');
+      const p = d.productos.find(x => x.id === m.productoId);
+      if (p) { if (p.stock - m.cantidad < 0) throw new Error('No se puede anular: esas prendas ya se vendieron. Corrige el stock desde "Editar".'); p.stock -= m.cantidad; }
+      m.tipo += ' anulado'; return { datos: save(d) };
+    }
+  };
+})();
+
+/* =====================================================================
+   INICIO DE LA APP
+   ===================================================================== */
+pintarIconos();
+construirNav();
+periodoUI('mov', renderMovimientos);
+periodoUI('rep', renderReportes);
+(async function inicio() {
+  const t = store.get('naguara_tk');
+  if (!t) return;
+  TOKEN = t;
+  document.getElementById('login').hidden = true;
+  document.getElementById('boot').hidden = false;
+  try { await entrar(); } catch (e) { salir(); }
+})();
+</script>
+</body>
+</html>
